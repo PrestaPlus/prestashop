@@ -1,11 +1,11 @@
 <?php
 
-use SpryngPaymentsApiPhp\Client;
-
 if (!defined('_PS_VERSION_'))
 {
     die('No direct script access');
 }
+
+require_once('vendor/autoload.php');
 
 class SpryngPayments extends PaymentModule
 {
@@ -34,7 +34,247 @@ class SpryngPayments extends PaymentModule
 
         require_once('vendor/autoload.php');
 
-        $this->api = new Client($this->getSettingValue('SPRYNG_API_KEY'), $this->getSettingValue('SPRYNG_SANDBOX_ENABLED'));
+        $this->api = new \SpryngPaymentsApiPhp\Client(
+            $this->getConfigurationValue('SPRYNG_API_KEY'),
+            $this->getConfigurationValue('SPRYNG_SANDBOX_ENABLED')
+        );
+    }
+
+    public function getContext()
+    {
+        if (Tools::isSubmit('btnSubmit'))
+        {
+            // TODO: Form submitted logic
+        }
+
+        $configHtml = '';
+        $configHtml .= $this->getConfigurationPanelInfoHtml();
+        $configHtml .= $this->getConfigForm();
+
+        return $configHtml;
+    }
+
+    protected function getConfigurationPanelInfoHtml()
+    {
+        return $this->display(__FILE__,'config_info.tpl');
+    }
+
+    protected function getConfigForm()
+    {
+        $fields = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => 'Spryng Payments Configuration',
+                    'icon' => 'icon-config'
+                ),
+                'input' => array(
+                    array(
+                        'type' => 'text',
+                        'label' => 'API Key',
+                        'name' => $this->getConfigKeyPrefix().'API_KEY',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'API_KEY')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'Sandbox Mode',
+                        'name' => $this->getConfigKeyPrefix().'SANDBOX_ENABLED',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'value' => '0',
+                                    'name' => 'Enabled'
+                                ),
+                                array(
+                                    'value' => '1',
+                                    'name' => 'Disabled'
+                                )
+                            ),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => 'Merchant Reference',
+                        'name' => $this->getConfigKeyPrefix().'MERCHANT_REFERENCE',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'MERCHANT_REFERENCE')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'iDEAL Enabled',
+                        'name' => $this->getConfigKeyPrefix().'IDEAL_ENABLED',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'value' => '0',
+                                    'name' => 'Enabled'
+                                ),
+                                array(
+                                    'value' => '1',
+                                    'name' => 'Disabled'
+                                )
+                            ),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => 'iDEAL Title',
+                        'name' => $this->getConfigKeyPrefix().'IDEAL_TITLE',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'IDEAL_TITLE')
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => 'iDEAL Description',
+                        'name' => $this->getConfigKeyPrefix().'IDEAL_DESCRIPTION',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'IDEAL_DESCRIPTION')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'iDEAL Account',
+                        'name' => $this->getConfigKeyPrefix().'IDEAL_ACCOUNT',
+                        'options' => array(
+                            'query' => $this->getAccountListForConfigurationForm(),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'CreditCard Enabled',
+                        'name' => $this->getConfigKeyPrefix().'CC_ENABLED',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'value' => '0',
+                                    'name' => 'Enabled'
+                                ),
+                                array(
+                                    'value' => '1',
+                                    'name' => 'Disabled'
+                                )
+                            ),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => 'CreditCard Title',
+                        'name' => $this->getConfigKeyPrefix().'CC_TITLE',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'CC_TITLE')
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => 'CreditCard Description',
+                        'name' => $this->getConfigKeyPrefix().'CC_DESCRIPTION',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'CC_DESCRIPTION')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'CreditCard Account',
+                        'name' => $this->getConfigKeyPrefix().'CC_ACCOUNT',
+                        'options' => array(
+                            'query' => $this->getAccountListForConfigurationForm(),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'PayPal Enabled',
+                        'name' => $this->getConfigKeyPrefix().'PAYPAL_ENABLED',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'value' => '0',
+                                    'name' => 'Enabled'
+                                ),
+                                array(
+                                    'value' => '1',
+                                    'name' => 'Disabled'
+                                )
+                            ),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => 'PayPal Title',
+                        'name' => $this->getConfigKeyPrefix().'PAYPAL_TITLE',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_TITLE')
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => 'PayPal Description',
+                        'name' => $this->getConfigKeyPrefix().'PAYPAL_DESCRIPTION',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_DESCRIPTION')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'PayPal Account',
+                        'name' => $this->getConfigKeyPrefix().'PAYPAL_ACCOUNT',
+                        'options' => array(
+                            'query' => $this->getAccountListForConfigurationForm(),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                )
+            )
+        );
+
+        $helper = new HelperForm();
+        $helper->show_toolbar = false;
+        $helper->table = $this->table;
+        $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
+        $helper->default_form_language = $lang-id;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
+        $this->fields_form = array();
+        $helper->id = (int)Tools::getValue('id_carrier');
+        $helper->identifier = $this->identifier;
+        $helper->submit_action = 'btnSubmit';
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name'.$this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->tpl_vars = array(
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id
+        );
+
+        return $helper->generateForm(array($fields));
+    }
+
+    private function getAccountListForConfigurationForm()
+    {
+        $accounts = $this->api->account->getAll();
+        $options = array();
+
+        foreach($accounts as $account)
+        {
+            $option = array(
+                'value' => $account->_id,
+                'name' => $account->name
+            );
+            array_push($options, $option);
+        }
+
+        $accountOptions = array(
+            'query' => $options,
+            'id' => 'value',
+            'name' => 'name'
+        );
+
+        return $accountOptions;
     }
 
     private function getSettingValue($setting)
@@ -54,7 +294,7 @@ class SpryngPayments extends PaymentModule
             $this->_errors[] = 'An error has occurred during the installation process of Spryng Payments for Prestashop.';
             return false;
         }
-        else if (!$this->initConfig())
+        else if (!$this->initializeConfiguration())
         {
             $this->_errors[] = 'The installer was unable to initialize the default settings.';
             return false;
@@ -150,7 +390,7 @@ class SpryngPayments extends PaymentModule
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PLUGIN_VERSION', $this->getVersion()) &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'API_KEY', '') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SANDBOX_ENABLED', true) &&
-            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'MERCHANT_REFERENCE', 'Prestashop plugun') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'MERCHANT_REFERENCE', 'Prestashop Plugin') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAY_BUTTON_TEXT', 'Pay with Spryng Payments') &&
 
             // iDEAL settings
@@ -201,6 +441,11 @@ class SpryngPayments extends PaymentModule
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ACCOUNT');
     }
 
+    public function changeOrderStatus($orderId, $newStatus)
+    {
+
+    }
+
     protected function initializeConfigurationValue($key, $value)
     {
         return Configuration::updateValue($key, (Configuration::get($key) !== false) ? Configuration::get($key) :
@@ -209,7 +454,12 @@ class SpryngPayments extends PaymentModule
 
     protected function deleteConfigurationValue($key)
     {
-        return Configuration::deleteByName($field);
+        return Configuration::deleteByName($key);
+    }
+
+    protected function getConfigurationValue($key)
+    {
+        return Configuration::get($key);
     }
 
     /**
@@ -226,5 +476,17 @@ class SpryngPayments extends PaymentModule
     public function getConfigKeyPrefix()
     {
         return self::CONFIG_KEY_PREFIX;
+    }
+
+    public function hookPayment($params)
+    {
+        if (!$this->active)
+            return;
+
+        $this->smarty->assign(array(
+            'ideal_enabled' => $this->getConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ENABLED')
+        ));
+
+        return $this->display(__FILE__,'payment.tpl');
     }
 }
