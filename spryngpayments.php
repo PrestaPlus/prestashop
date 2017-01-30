@@ -17,7 +17,7 @@ class SpryngPayments extends PaymentModule
     public $name = 'spryngpayments';
     public $tab = 'payments_gateways';
     public $version = '1.0';
-    public $author = 'Complexity';
+    public $author = 'Spryng Payments';
     public $need_instance = true;
     public $ps_versions_compliency = array('min' => '1.5', 'max' => '2');
     public $settings = [
@@ -289,18 +289,35 @@ class SpryngPayments extends PaymentModule
      */
     public function install()
     {
-        if (!parent::install() || !$this->_registerHooks())
+        PrestaShopLogger::addLog('STARTING SPRYNG INSTALLATION');
+
+        if (!parent::install())
         {
-            $this->_errors[] = 'An error has occurred during the installation process of Spryng Payments for Prestashop.';
-            return false;
-        }
-        else if (!$this->initializeConfiguration())
-        {
-            $this->_errors[] = 'The installer was unable to initialize the default settings.';
+            PrestaShopLogger::addLog('Parent installation failed');
+            $this->_errors[] = 'An error occured during the initial installation of Spryng Payments for Prestashop.';
             return false;
         }
 
-        $this->createDatabaseTables();
+        if (!$this->_registerHooks())
+        {
+            PrestaShopLogger::addLog('Registering hooks failed');
+            $this->_errors[] = 'An error has occurred during the installation process of Spryng Payments for Prestashop.';
+            return false;
+        }
+
+        if (!$this->initializeConfiguration())
+        {
+            PrestaShopLogger::addLog('Initializing configuration failed.');
+            $this->_errors[] = 'Spryng Payments failed to load initial configuration.';
+            return false;
+        }
+
+        if (!$this->createDatabaseTables())
+        {
+            PrestaShopLogger::addLog('Initializing database failed.');
+            $this->_errors[] = 'A database error occured while trying to initialize Spryng Payments.';
+            return false;
+        }
 
         return true;
     }
@@ -331,19 +348,56 @@ class SpryngPayments extends PaymentModule
 
     private function dropDatabaseTables()
     {
-        require(dirname(__FILE__).'/db/drop.php');
+        $queries = [
+            'DROP TABLE IF EXISTS `'._DB_PREFIX_.'spryng_payments_transactions`',
+            'DROP TABLE IF EXISTS `'._DB_PREFIX_.'spryng_payments_logs`'
+        ];
+
+        foreach ($queries as $query)
+        {
+            if (!Db::getInstance()->execute($query))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function createDatabaseTables()
     {
-        require(dirname(__FILE__).'/db/init.php');
+        $queries = [
+            sprintf("
+        CREATE TABLE IF NOT EXISTS `%s` (
+          `transaction_id` VARCHAR(255) NOT NULL PRIMARY KEY,
+          `payment_method` VARCHAR(255) NOT NULL,
+          `cart_id` INT(64),
+          `order_id` INT(64),
+          `status` VARCHAR(255) NOT NULL,
+          `created_at` DATETIME NOT NULL,
+          `updated_at` DATETIME NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                _DB_PREFIX_.'spryng_payments'
+            )
+        ];
+
+        foreach($queries as $query)
+        {
+            if (!Db::getInstance()->execute($query))
+            {
+                PrestaShopLogger::addLog(sprintf('Error occured while executing %s', $query));
+                $this->_errors[] = sprintf('Could not initialize database. Query: %s.', $query);
+                return false;
+            }
+        }
+
+        return true;
     }
     
     protected function _registerHooks()
     {
         return
             $this->_registerHook('displayPayment') &&
-            $this->_registerHook('displayPaymentEU', false) &&
             $this->_registerHook('displayPaymentTop') &&
             $this->_registerHook('displayAdminOrder') &&
             $this->_registerHook('displayHeader') &&
@@ -478,15 +532,40 @@ class SpryngPayments extends PaymentModule
         return self::CONFIG_KEY_PREFIX;
     }
 
-    public function hookPayment($params)
+    public function hookDisplayPayment($params)
     {
         if (!$this->active)
             return;
 
         $this->smarty->assign(array(
-            'ideal_enabled' => $this->getConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ENABLED')
+            'ideal_enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ENABLED')
         ));
 
         return $this->display(__FILE__,'payment.tpl');
+    }
+
+    public function hookDisplayPaymentTop()
+    {
+
+    }
+
+    public function hookDisplayAdminOrder()
+    {
+
+    }
+
+    public function hookDisplayHeader()
+    {
+
+    }
+
+    public function displayBackOfficeHeader()
+    {
+
+    }
+
+    public function displayOrderConfirmation()
+    {
+
     }
 }
