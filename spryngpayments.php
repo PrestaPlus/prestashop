@@ -36,11 +36,11 @@ class SpryngPayments extends PaymentModule
 
         $this->api = new \SpryngPaymentsApiPhp\Client(
             $this->getConfigurationValue('SPRYNG_API_KEY'),
-            $this->getConfigurationValue('SPRYNG_SANDBOX_ENABLED')
+            (bool) $this->getConfigurationValue('SPRYNG_SANDBOX_ENABLED')
         );
     }
 
-    public function getContext()
+    public function getContent()
     {
         if (Tools::isSubmit('btnSubmit'))
         {
@@ -61,6 +61,18 @@ class SpryngPayments extends PaymentModule
 
     protected function getConfigForm()
     {
+
+        $accounts = $this->getAccountListForConfigurationForm();
+        if (count($accounts) > 0)
+        {
+            $accountSelectorDisabled = false;
+        }
+        else
+        {
+            $accounts[0] = 'Please enter a valid API Key first.';
+            $accountSelectorDisabled = true;
+        }
+
         $fields = array(
             'form' => array(
                 'legend' => array(
@@ -138,8 +150,9 @@ class SpryngPayments extends PaymentModule
                         'type' => 'select',
                         'label' => 'iDEAL Account',
                         'name' => $this->getConfigKeyPrefix().'IDEAL_ACCOUNT',
+                        'disabled' => $accountSelectorDisabled,
                         'options' => array(
-                            'query' => $this->getAccountListForConfigurationForm(),
+                            'query' => $accounts,
                             'id' => 'value',
                             'name' => 'name'
                         )
@@ -181,8 +194,9 @@ class SpryngPayments extends PaymentModule
                         'type' => 'select',
                         'label' => 'CreditCard Account',
                         'name' => $this->getConfigKeyPrefix().'CC_ACCOUNT',
+                        'disabled' => $accountSelectorDisabled,
                         'options' => array(
-                            'query' => $this->getAccountListForConfigurationForm(),
+                            'query' => $accounts,
                             'id' => 'value',
                             'name' => 'name'
                         )
@@ -224,8 +238,9 @@ class SpryngPayments extends PaymentModule
                         'type' => 'select',
                         'label' => 'PayPal Account',
                         'name' => $this->getConfigKeyPrefix().'PAYPAL_ACCOUNT',
+                        'disabled' => $accountSelectorDisabled,
                         'options' => array(
-                            'query' => $this->getAccountListForConfigurationForm(),
+                            'query' => $accounts,
                             'id' => 'value',
                             'name' => 'name'
                         )
@@ -256,7 +271,13 @@ class SpryngPayments extends PaymentModule
 
     private function getAccountListForConfigurationForm()
     {
-        $accounts = $this->api->account->getAll();
+        try {
+            $accounts = $this->api->account->getAll();
+        }
+        catch(\GuzzleHttp\Exception\ClientException $clientException)
+        {
+            return array();
+        }
         $options = array();
 
         foreach($accounts as $account)
@@ -289,8 +310,6 @@ class SpryngPayments extends PaymentModule
      */
     public function install()
     {
-        PrestaShopLogger::addLog('STARTING SPRYNG INSTALLATION');
-
         if (!parent::install())
         {
             PrestaShopLogger::addLog('Parent installation failed');
