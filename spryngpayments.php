@@ -42,16 +42,36 @@ class SpryngPayments extends PaymentModule
 
     public function getContent()
     {
+        $configHtml = '';
+
         if (Tools::isSubmit('btnSubmit'))
         {
-            // TODO: Form submitted logic
+            $this->processConfigSubmit();
+            $configHtml .= $this->displayConfirmation('Settings updated.');
         }
 
-        $configHtml = '';
         $configHtml .= $this->getConfigurationPanelInfoHtml();
         $configHtml .= $this->getConfigForm();
 
         return $configHtml;
+    }
+
+    protected function processConfigSubmit()
+    {
+        if (Tools::isSubmit('btnSubmit'))
+        {
+            $postData = Tools::getAllValues();
+            $prefix = $this->getConfigKeyPrefix();
+
+            foreach($postData as $key => $post)
+            {
+                if (substr($key, 0, strlen($prefix)) == $prefix)
+                {
+                    PrestaShopLogger::addLog(sprintf('Updating %s with value %s', $key, $post));
+                    Configuration::updateValue($key, $post);
+                }
+            }
+        }
     }
 
     protected function getConfigurationPanelInfoHtml()
@@ -61,7 +81,6 @@ class SpryngPayments extends PaymentModule
 
     protected function getConfigForm()
     {
-
         $accounts = $this->getAccountListForConfigurationForm();
         if (count($accounts) > 0)
         {
@@ -69,7 +88,10 @@ class SpryngPayments extends PaymentModule
         }
         else
         {
-            $accounts[0] = 'Please enter a valid API Key first.';
+            $accounts[0] = [
+                'id_option' => 1,
+                'name' => 'Please enter a valid API key first.'
+            ];
             $accountSelectorDisabled = true;
         }
 
@@ -94,11 +116,11 @@ class SpryngPayments extends PaymentModule
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'value' => '0',
+                                    'value' => '1',
                                     'name' => 'Enabled'
                                 ),
                                 array(
-                                    'value' => '1',
+                                    'value' => '0',
                                     'name' => 'Disabled'
                                 )
                             ),
@@ -245,6 +267,9 @@ class SpryngPayments extends PaymentModule
                             'name' => 'name'
                         )
                     ),
+                ),
+                'submit' => array(
+                    'title' => $this->l('Save'),
                 )
             )
         );
@@ -262,11 +287,34 @@ class SpryngPayments extends PaymentModule
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name'.$this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->tpl_vars = array(
+            'fields_value' => $this->getAllConfigurationValues(),
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id
         );
 
         return $helper->generateForm(array($fields));
+    }
+
+    private function getAllConfigurationValues()
+    {
+        $prefix = $this->getConfigKeyPrefix();
+        return array(
+            $prefix . 'API_KEY' => Tools::getValue($prefix . 'API_KEY', Configuration::get($prefix . 'API_KEY')),
+            $prefix . 'SANDBOX_ENABLED' => Tools::getValue($prefix . 'SANDBOX_ENABLED', Configuration::get($prefix . 'SANDBOX_ENABLED')),
+            $prefix . 'MERCHANT_REFERENCE' => Tools::getValue($prefix . 'MERCHANT_REFERENCE', Configuration::get($prefix . 'MERCHANT_REFERENCE')),
+            $prefix . 'CC_ACCOUNT' => Tools::getValue($prefix . 'CC_ACCOUNT', Configuration::get($prefix . 'CC_ACCOUNT')),
+            $prefix . 'CC_DESCRIPTION' => Tools::getValue($prefix . 'CC_DESCRIPTION', Configuration::get($prefix . 'CC_DESCRIPTION')),
+            $prefix . 'CC_ENABLED' => Tools::getValue($prefix . 'CC_ENABLED', Configuration::get($prefix . 'CC_ENABLED')),
+            $prefix . 'CC_TITLE' => Tools::getValue($prefix . 'CC_TITLE', Configuration::get($prefix . 'CC_TITLE')),
+            $prefix . 'IDEAL_ACCOUNT' => Tools::getValue($prefix . 'IDEAL_ACCOUNT', Configuration::get($prefix . 'IDEAL_ACCOUNT')),
+            $prefix . 'IDEAL_ENABLED' => Tools::getValue($prefix . 'IDEAL_ENABLED', Configuration::get($prefix . 'IDEAL_ENABLED')),
+            $prefix . 'IDEAL_TITLE' => Tools::getValue($prefix . 'IDEAL_TITLE', Configuration::get($prefix . 'IDEAL_TITLE')),
+            $prefix . 'IDEAL_DESCRIPTION' => Tools::getValue($prefix . 'IDEAL_DESCRIPTION', Configuration::get($prefix . 'IDEAL_DESCRIPTION')),
+            $prefix . 'PAYPAL_ENABLED' => Tools::getValue($prefix . 'PAYPAL_ENABLED', Configuration::get($prefix . 'PAYPAL_ENABLED')),
+            $prefix . 'PAYPAL_ACCOUNT' => Tools::getValue($prefix . 'PAYPAL_ACCOUNT', Configuration::get($prefix . 'PAYPAL_ACCOUNT')),
+            $prefix . 'PAYPAL_TITLE' => Tools::getValue($prefix . 'PAYPAL_TITLE', Configuration::get($prefix . 'PAYPAL_TITLE')),
+            $prefix . 'PAYPAL_DESCRIPTION' => Tools::getValue($prefix . 'PAYPAL_DESCRIPTION', Configuration::get($prefix . 'PAYPAL_DESCRIPTION')),
+        );
     }
 
     private function getAccountListForConfigurationForm()
