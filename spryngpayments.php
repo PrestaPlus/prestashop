@@ -20,9 +20,10 @@ class SpryngPayments extends PaymentModule
     public $author = 'Spryng Payments';
     public $need_instance = true;
     public $ps_versions_compliency = array('min' => '1.5', 'max' => '2');
-    public $settings = [
-        'SPRYNG_API_KEY',
-        'SPRYNG_SANDBOX_ENABLED'
+    public $gateways = [
+        'CREDIT_CARD',
+        'IDEAL',
+        'PAYPAL'
     ];
 
     public function __construct()
@@ -142,11 +143,11 @@ class SpryngPayments extends PaymentModule
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'value' => '0',
+                                    'value' => '1',
                                     'name' => 'Enabled'
                                 ),
                                 array(
-                                    'value' => '1',
+                                    'value' => '0',
                                     'name' => 'Disabled'
                                 )
                             ),
@@ -173,11 +174,7 @@ class SpryngPayments extends PaymentModule
                         'label' => 'iDEAL Account',
                         'name' => $this->getConfigKeyPrefix().'IDEAL_ACCOUNT',
                         'disabled' => $accountSelectorDisabled,
-                        'options' => array(
-                            'query' => $accounts,
-                            'id' => 'value',
-                            'name' => 'name'
-                        )
+                        'options' => $accounts
                     ),
                     array(
                         'type' => 'select',
@@ -186,11 +183,11 @@ class SpryngPayments extends PaymentModule
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'value' => '0',
+                                    'value' => '1',
                                     'name' => 'Enabled'
                                 ),
                                 array(
-                                    'value' => '1',
+                                    'value' => '0',
                                     'name' => 'Disabled'
                                 )
                             ),
@@ -217,11 +214,7 @@ class SpryngPayments extends PaymentModule
                         'label' => 'CreditCard Account',
                         'name' => $this->getConfigKeyPrefix().'CC_ACCOUNT',
                         'disabled' => $accountSelectorDisabled,
-                        'options' => array(
-                            'query' => $accounts,
-                            'id' => 'value',
-                            'name' => 'name'
-                        )
+                        'options' => $accounts
                     ),
                     array(
                         'type' => 'select',
@@ -230,11 +223,11 @@ class SpryngPayments extends PaymentModule
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'value' => '0',
+                                    'value' => '1',
                                     'name' => 'Enabled'
                                 ),
                                 array(
-                                    'value' => '1',
+                                    'value' => '0',
                                     'name' => 'Disabled'
                                 )
                             ),
@@ -261,11 +254,7 @@ class SpryngPayments extends PaymentModule
                         'label' => 'PayPal Account',
                         'name' => $this->getConfigKeyPrefix().'PAYPAL_ACCOUNT',
                         'disabled' => $accountSelectorDisabled,
-                        'options' => array(
-                            'query' => $accounts,
-                            'id' => 'value',
-                            'name' => 'name'
-                        )
+                        'options' => $accounts
                     ),
                 ),
                 'submit' => array(
@@ -599,16 +588,34 @@ class SpryngPayments extends PaymentModule
         return self::CONFIG_KEY_PREFIX;
     }
 
-    public function hookDisplayPayment($params)
+    public function hookDisplayPayment()
     {
         if (!$this->active)
             return;
 
+        $configuration = array(
+            'ideal' => array(
+                'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ENABLED'),
+                'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_TITLE'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_DESCRIPTION')
+            ),
+            'creditcard' => array(
+                'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ENABLED'),
+                'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_TITLE'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_DESCRIPTION')
+            ),
+            'paypal' => array(
+                'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ENABLED'),
+                'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_TITLE'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_DESCRIPTION')
+            ),
+        );
+
         $this->smarty->assign(array(
-            'ideal_enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ENABLED')
+            'configuration' => $configuration
         ));
 
-        return $this->display(__FILE__,'payment.tpl');
+        return $this->display(__FILE__, 'payment.tpl');
     }
 
     public function hookDisplayPaymentTop()
