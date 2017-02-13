@@ -567,7 +567,7 @@ class SpryngPayments extends PaymentModule
         return Configuration::deleteByName($key);
     }
 
-    protected function getConfigurationValue($key)
+    public function getConfigurationValue($key)
     {
         return Configuration::get($key);
     }
@@ -612,6 +612,7 @@ class SpryngPayments extends PaymentModule
         );
 
         $this->smarty->assign(array(
+            'sandboxEnabled' => (bool) $this->getConfigurationValue('SPRYNG_SANDBOX_ENABLED'),
             'configuration' => $configuration
         ));
 
