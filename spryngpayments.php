@@ -684,22 +684,22 @@ class SpryngPayments extends PaymentModule
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_DESCRIPTION'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ORGANISATION'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ACCOUNT')
+                'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ORGANISATION'),
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ACCOUNT')
             ),
             'creditcard' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_DESCRIPTION'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ORGANISATION'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ACCOUNT')
+                'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ORGANISATION'),
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ACCOUNT')
             ),
             'paypal' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_DESCRIPTION'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ORGANISATION'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ACCOUNT')
+                'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ORGANISATION'),
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ACCOUNT')
             ),
         );
 

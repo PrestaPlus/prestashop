@@ -59,9 +59,6 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         $orderAmount = $cart->getOrderTotal(true, Cart::BOTH);
         $transaction = $this->preparePaymentObject($orderAmount, $paymentMethod, $idealIssuer, $cart, $customer, $cardToken);
 
-        var_dump($transaction);
-        die;
-
         $this->submitTransaction($transaction, $paymentMethod);
 
         Db::getInstance()->insert(
