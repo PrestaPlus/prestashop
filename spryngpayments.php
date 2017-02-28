@@ -120,14 +120,14 @@ class SpryngPayments extends PaymentModule
                 ),
                 'input' => array(
                     array(
-                        'type' => 'password',
+                        'type' => 'text',
                         'label' => 'API Key Live',
                         'name' => $this->getConfigKeyPrefix().'API_KEY_LIVE',
                         'required' => false,
                         'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'API_KEY_LIVE')
                     ),
                     array(
-                        'type' => 'password',
+                        'type' => 'text',
                         'label' => 'API Key Sandbox',
                         'name' => $this->getConfigKeyPrefix().'API_KEY_SANDBOX',
                         'required' => false,
