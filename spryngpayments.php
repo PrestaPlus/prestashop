@@ -36,8 +36,10 @@ class SpryngPayments extends PaymentModule
         require_once('vendor/autoload.php');
 
         $this->api = new \SpryngPaymentsApiPhp\Client(
-            $this->getConfigurationValue('SPRYNG_API_KEY'),
-            (bool) $this->getConfigurationValue('SPRYNG_SANDBOX_ENABLED')
+            ((bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SANDBOX_ENABLED') ? // Use applicable API key for environment
+                $this->getConfigurationValue($this->getConfigKeyPrefix() . 'API_KEY_SANDBOX') :
+                $this->getConfigurationValue($this->getConfigKeyPrefix() . 'API_KEY_LIVE')),
+            (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SANDBOX_ENABLED')
         );
     }
 
@@ -82,6 +84,7 @@ class SpryngPayments extends PaymentModule
 
     protected function getConfigForm()
     {
+        $organisations = $this->getOrganisationListForConfigurationForm();
         $accounts = $this->getAccountListForConfigurationForm();
         if (count($accounts) > 0)
         {
@@ -96,6 +99,19 @@ class SpryngPayments extends PaymentModule
             $accountSelectorDisabled = true;
         }
 
+        if (count($organisations) > 0)
+        {
+            $organisationSelectorDisabled = false;
+        }
+        else
+        {
+            $organisations[0] = [
+                'id_option' => 1,
+                'name' => 'Please enter a valid API key first.'
+            ];
+            $organisationSelectorDisabled = true;
+        }
+
         $fields = array(
             'form' => array(
                 'legend' => array(
@@ -104,11 +120,18 @@ class SpryngPayments extends PaymentModule
                 ),
                 'input' => array(
                     array(
-                        'type' => 'text',
-                        'label' => 'API Key',
-                        'name' => $this->getConfigKeyPrefix().'API_KEY',
+                        'type' => 'password',
+                        'label' => 'API Key Live',
+                        'name' => $this->getConfigKeyPrefix().'API_KEY_LIVE',
                         'required' => false,
-                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'API_KEY')
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'API_KEY_LIVE')
+                    ),
+                    array(
+                        'type' => 'password',
+                        'label' => 'API Key Sandbox',
+                        'name' => $this->getConfigKeyPrefix().'API_KEY_SANDBOX',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'API_KEY_SANDBOX')
                     ),
                     array(
                         'type' => 'select',
@@ -171,6 +194,13 @@ class SpryngPayments extends PaymentModule
                     ),
                     array(
                         'type' => 'select',
+                        'label' => 'iDEAL Organisation',
+                        'name' => $this->getConfigKeyPrefix().'IDEAL_ORGANISATION',
+                        'disabled' => $organisationSelectorDisabled,
+                        'options' => $organisations
+                    ),
+                    array(
+                        'type' => 'select',
                         'label' => 'iDEAL Account',
                         'name' => $this->getConfigKeyPrefix().'IDEAL_ACCOUNT',
                         'disabled' => $accountSelectorDisabled,
@@ -208,6 +238,13 @@ class SpryngPayments extends PaymentModule
                         'name' => $this->getConfigKeyPrefix().'CC_DESCRIPTION',
                         'required' => false,
                         'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'CC_DESCRIPTION')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'CreditCard Organisation',
+                        'name' => $this->getConfigKeyPrefix().'CC_ORGANISATION',
+                        'disabled' => $organisationSelectorDisabled,
+                        'options' => $organisations
                     ),
                     array(
                         'type' => 'select',
@@ -251,6 +288,13 @@ class SpryngPayments extends PaymentModule
                     ),
                     array(
                         'type' => 'select',
+                        'label' => 'PayPal Organisation',
+                        'name' => $this->getConfigKeyPrefix().'PAYPAL_ORGANISATION',
+                        'disabled' => $organisationSelectorDisabled,
+                        'options' => $organisations
+                    ),
+                    array(
+                        'type' => 'select',
                         'label' => 'PayPal Account',
                         'name' => $this->getConfigKeyPrefix().'PAYPAL_ACCOUNT',
                         'disabled' => $accountSelectorDisabled,
@@ -288,22 +332,56 @@ class SpryngPayments extends PaymentModule
     {
         $prefix = $this->getConfigKeyPrefix();
         return array(
-            $prefix . 'API_KEY' => Tools::getValue($prefix . 'API_KEY', Configuration::get($prefix . 'API_KEY')),
+            $prefix . 'API_KEY_LIVE' => Tools::getValue($prefix . 'API_KEY_LIVE', Configuration::get($prefix . 'API_KEY_LIVE')),
+            $prefix . 'API_KEY_SANDBOX' => Tools::getValue($prefix . 'API_KEY_SANDBOX', Configuration::get($prefix . 'API_KEY_SANDBOX')),
             $prefix . 'SANDBOX_ENABLED' => Tools::getValue($prefix . 'SANDBOX_ENABLED', Configuration::get($prefix . 'SANDBOX_ENABLED')),
             $prefix . 'MERCHANT_REFERENCE' => Tools::getValue($prefix . 'MERCHANT_REFERENCE', Configuration::get($prefix . 'MERCHANT_REFERENCE')),
+            $prefix . 'CC_ORGANISATION' => Tools::getValue($prefix . 'CC_ORGANISATION', Configuration::get($prefix . 'CC_ORGANISATION')),
             $prefix . 'CC_ACCOUNT' => Tools::getValue($prefix . 'CC_ACCOUNT', Configuration::get($prefix . 'CC_ACCOUNT')),
             $prefix . 'CC_DESCRIPTION' => Tools::getValue($prefix . 'CC_DESCRIPTION', Configuration::get($prefix . 'CC_DESCRIPTION')),
             $prefix . 'CC_ENABLED' => Tools::getValue($prefix . 'CC_ENABLED', Configuration::get($prefix . 'CC_ENABLED')),
             $prefix . 'CC_TITLE' => Tools::getValue($prefix . 'CC_TITLE', Configuration::get($prefix . 'CC_TITLE')),
+            $prefix . 'IDEAL_ORGANISATION' => Tools::getValue($prefix . 'IDEAL_ORGANISATION', Configuration::get($prefix . 'IDEAL_ORGANISATION')),
             $prefix . 'IDEAL_ACCOUNT' => Tools::getValue($prefix . 'IDEAL_ACCOUNT', Configuration::get($prefix . 'IDEAL_ACCOUNT')),
             $prefix . 'IDEAL_ENABLED' => Tools::getValue($prefix . 'IDEAL_ENABLED', Configuration::get($prefix . 'IDEAL_ENABLED')),
             $prefix . 'IDEAL_TITLE' => Tools::getValue($prefix . 'IDEAL_TITLE', Configuration::get($prefix . 'IDEAL_TITLE')),
             $prefix . 'IDEAL_DESCRIPTION' => Tools::getValue($prefix . 'IDEAL_DESCRIPTION', Configuration::get($prefix . 'IDEAL_DESCRIPTION')),
             $prefix . 'PAYPAL_ENABLED' => Tools::getValue($prefix . 'PAYPAL_ENABLED', Configuration::get($prefix . 'PAYPAL_ENABLED')),
+            $prefix . 'PAYPAL_ORGANISATION' => Tools::getValue($prefix . 'PAYPAL_ORGANISATION', Configuration::get($prefix . 'PAYPAL_ORGANISATION')),
             $prefix . 'PAYPAL_ACCOUNT' => Tools::getValue($prefix . 'PAYPAL_ACCOUNT', Configuration::get($prefix . 'PAYPAL_ACCOUNT')),
             $prefix . 'PAYPAL_TITLE' => Tools::getValue($prefix . 'PAYPAL_TITLE', Configuration::get($prefix . 'PAYPAL_TITLE')),
             $prefix . 'PAYPAL_DESCRIPTION' => Tools::getValue($prefix . 'PAYPAL_DESCRIPTION', Configuration::get($prefix . 'PAYPAL_DESCRIPTION')),
         );
+    }
+
+    private function getOrganisationListForConfigurationForm()
+    {
+        try {
+            $organisations = $this->api->organisation->getAll();
+        }
+        catch(\GuzzleHttp\Exception\ClientException $clientException)
+        {
+            return array();
+        }
+
+        $options = array();
+
+        foreach($organisations as $organisation)
+        {
+            $option = array(
+                'value' => $organisation->_id,
+                'name' => $organisation->name
+            );
+            array_push($options, $option);
+        }
+
+        $organisationOptions = array(
+            'query' => $options,
+            'id' => 'value',
+            'name' => 'name'
+        );
+
+        return $organisationOptions;
     }
 
     private function getAccountListForConfigurationForm()
@@ -498,7 +576,8 @@ class SpryngPayments extends PaymentModule
         return
             // General settings
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PLUGIN_VERSION', $this->getVersion()) &&
-            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'API_KEY', '') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'API_KEY_LIVE', '') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'API_KEY_SANDBOX', '') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SANDBOX_ENABLED', true) &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'MERCHANT_REFERENCE', 'Prestashop Plugin') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAY_BUTTON_TEXT', 'Pay with Spryng Payments') &&
@@ -507,18 +586,21 @@ class SpryngPayments extends PaymentModule
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ENABLED', false) &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'IDEAL_TITLE', 'Spryng Payments - iDEAL') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'IDEAL_DESCRIPTION', 'Pay online via your own bank') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ORGANISATION', '') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ACCOUNT', '') &&
 
             // Credit Card settings
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'CC_ENABLED', false) &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'CC_TITLE', 'Spryng Payments - CreditCard') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'CC_DESCRIPTION', 'Pay using your own CreditCard') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'CC_ORGANISATION', '') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'CC_ACCOUNT', '') &&
 
             // PayPal settings
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ENABLED', false) &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_TITLE', 'Spryng Payments - PayPal') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_DESCRIPTION', 'Pay safely using PayPal') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ORGANISATION', '');
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ACCOUNT', '');
     }
 
@@ -527,7 +609,8 @@ class SpryngPayments extends PaymentModule
         return
             // General settings
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PLUGIN_VERSION') &&
-            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'API_KEY') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'API_KEY_LIVE') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'API_KEY_SANDBOX') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SANDBOX_ENABLED') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'MERCHANT_REFERENCE') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAY_BUTTON_TEXT') &&
@@ -536,18 +619,21 @@ class SpryngPayments extends PaymentModule
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ENABLED') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'IDEAL_TITLE') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'IDEAL_DESCRIPTION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ORGANISATION') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'IDEAL_ACCOUNT') &&
 
             // Credit Card settings
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'CC_ENABLED') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'CC_TITLE') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'CC_DESCRIPTION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'CC_ORGANISATION') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'CC_ACCOUNT') &&
 
             // PayPal settings
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ENABLED') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_TITLE') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_DESCRIPTION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ORGANISATION');
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ACCOUNT');
     }
 
@@ -597,17 +683,23 @@ class SpryngPayments extends PaymentModule
             'ideal' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_TITLE'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_DESCRIPTION')
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_DESCRIPTION'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ORGANISATION'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ACCOUNT')
             ),
             'creditcard' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_TITLE'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_DESCRIPTION')
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_DESCRIPTION'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ORGANISATION'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ACCOUNT')
             ),
             'paypal' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_TITLE'),
-                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_DESCRIPTION')
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_DESCRIPTION'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ORGANISATION'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ACCOUNT')
             ),
         );
 

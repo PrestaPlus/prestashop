@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "443ca656dec18f3e5ea7751d2429fc2aeacf3ca2"
+                "reference": "437c0c33217953b3b75e5080b73554da5f76b179"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/443ca656dec18f3e5ea7751d2429fc2aeacf3ca2",
-                "reference": "443ca656dec18f3e5ea7751d2429fc2aeacf3ca2",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/437c0c33217953b3b75e5080b73554da5f76b179",
+                "reference": "437c0c33217953b3b75e5080b73554da5f76b179",
                 "shasum": ""
             },
             "require": {
@@ -30,6 +30,9 @@
                 "ext-curl": "*",
                 "phpunit/phpunit": "^4.0",
                 "psr/log": "^1.0"
+            },
+            "suggest": {
+                "psr/log": "Required for using the Log middleware"
             },
             "type": "library",
             "extra": {
@@ -67,7 +70,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2017-01-16 17:41:59"
+            "time": "2017-02-23 20:32:34"
         },
         {
             "name": "guzzlehttp/promises",
@@ -126,12 +129,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "5f17a79615bd36d52d3b3ce44075aec02605d8bf"
+                "reference": "0d6c7ca039329247e4f0f8f8f6506810e8248855"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/5f17a79615bd36d52d3b3ce44075aec02605d8bf",
-                "reference": "5f17a79615bd36d52d3b3ce44075aec02605d8bf",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/0d6c7ca039329247e4f0f8f8f6506810e8248855",
+                "reference": "0d6c7ca039329247e4f0f8f8f6506810e8248855",
                 "shasum": ""
             },
             "require": {
@@ -183,7 +186,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2016-11-02 14:11:11"
+            "time": "2017-02-27 10:51:17"
         },
         {
             "name": "psr/http-message",
@@ -240,13 +243,13 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Spryng/spryng-payments-api-php.git",
-                "reference": "50f4903ff00ee09125bc7fc484afa0b1fd28cf65"
+                "url": "https://github.com/spryngpayments/php.git",
+                "reference": "2b5536e69ae1721a4fa7a1031410c7581cb8350f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Spryng/spryng-payments-api-php/zipball/50f4903ff00ee09125bc7fc484afa0b1fd28cf65",
-                "reference": "50f4903ff00ee09125bc7fc484afa0b1fd28cf65",
+                "url": "https://api.github.com/repos/spryngpayments/php/zipball/2b5536e69ae1721a4fa7a1031410c7581cb8350f",
+                "reference": "2b5536e69ae1721a4fa7a1031410c7581cb8350f",
                 "shasum": ""
             },
             "require": {
@@ -272,7 +275,7 @@
                 }
             ],
             "description": "A PHP interface to the Spryng Payments platform",
-            "time": "2017-01-30 11:48:32"
+            "time": "2017-02-27 12:37:07"
         }
     ],
     "packages-dev": [],
