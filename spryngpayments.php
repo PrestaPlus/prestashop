@@ -25,6 +25,18 @@ class SpryngPayments extends PaymentModule
         'IDEAL',
         'PAYPAL'
     ];
+    public $iDealIssuers = [
+        'ABNANL2A' => 'ABN Ambro',
+        'ASNBNL21'=> 'ASN Bank',
+        'BUNQNL2A' => 'Bunq',
+        'FVLBNL22' => 'Van Lanschot Bankiers',
+        'INGBNL2A' => 'ING',
+        'KNABNL2H' => 'Knab',
+        'RABONL2U' => 'Rabobank',
+        'RBRBNL21' => 'Regiobank',
+        'SNSNML2A' => 'SNS Bank',
+        'TRIONL2U' => 'Triodos Bank'
+    ];
 
     public function __construct()
     {
@@ -685,21 +697,25 @@ class SpryngPayments extends PaymentModule
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ORGANISATION'),
-                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ACCOUNT')
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ACCOUNT'),
+                'issuers' => $this->iDealIssuers,
+                'toggle' => true
             ),
             'creditcard' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ORGANISATION'),
-                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ACCOUNT')
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ACCOUNT'),
+                'toggle' => true
             ),
             'paypal' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ORGANISATION'),
-                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ACCOUNT')
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ACCOUNT'),
+                'toggle' => false
             ),
         );
 
@@ -733,6 +749,6 @@ class SpryngPayments extends PaymentModule
 
     public function displayOrderConfirmation()
     {
-
+        
     }
 }
