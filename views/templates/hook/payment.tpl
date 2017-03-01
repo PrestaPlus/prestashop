@@ -17,13 +17,12 @@
         <p class="payment_module">
             <a
                     class="spryng_payments_payment_module"
+                    title="{$gateway['title']}"
+                    x-method="{$name}"
                     {if !$gateway['toggle']}
                         onclick="submitCheckout('{$name}');"
                         href="#"
-                    {/if}
-                    title="{$gateway['title']}"
-                    x-method="{$name}"
-                    {if $gateway['toggle']}
+                    {else}
                         x-toggle="true"
                     {/if}
             >
