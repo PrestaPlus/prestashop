@@ -39,10 +39,12 @@
                     <button id="spryng_cc_submit_button" class="btn btn-info">Submit</button>
                 {elseif $name == 'ideal'}
                     <select name="ideal_issuer" id="ideal_issuer">
+                        <option value="">Select your bank</option>
                         {foreach $gateway['issuers'] as $issuerId => $name}
                             <option value="{$issuerId}">{$name}</option>
                         {/foreach}
                     </select>
+                    <button id="spryng_ideal_submit_button" class="btn btn-info">Submit</button>
                 {/if}
             </div>
         {/if}
@@ -97,16 +99,30 @@
                     submitCheckout('creditcard', response._id);
                 }
             });
+
+            $('#spryng_ideal_submit_button').on('click', function(e) {
+                var issuer = $('#ideal_issuer').val();
+
+                if (issuer === "" || issuer === undefined) {
+                    console.log('Something seems off');
+                    console.log(issuer);
+                    return false;
+                }
+                else {
+                    submitCheckout('ideal', false, issuer);
+                }
+            });
         });
     });
 
-    function submitCheckout(method, cardToken = false)
+    function submitCheckout(method, cardToken = false, issuer = false)
     {
         var formMethod = 'POST';
         var action = "{$link->getModuleLink('spryngpayments', 'payment')}";
         var params = {
             'method': method,
-            'cardToken': cardToken
+            'cardToken': cardToken,
+            'issuer': issuer
         };
 
         var form = document.createElement('form');
