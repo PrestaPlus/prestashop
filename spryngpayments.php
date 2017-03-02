@@ -6,6 +6,8 @@ if (!defined('_PS_VERSION_'))
 }
 
 require_once('vendor/autoload.php');
+require_once('helpers/helper.php');
+require_once('helpers/transaction.php');
 
 class SpryngPayments extends PaymentModule
 {
@@ -38,6 +40,8 @@ class SpryngPayments extends PaymentModule
         'TRIONL2U' => 'Triodos Bank'
     ];
 
+    public $transactionHelper;
+
     public function __construct()
     {
         parent::__construct();
@@ -53,6 +57,8 @@ class SpryngPayments extends PaymentModule
                 $this->getConfigurationValue($this->getConfigKeyPrefix() . 'API_KEY_LIVE')),
             (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SANDBOX_ENABLED')
         );
+
+        $this->transactionHelper = new TransactionHelper($this->api);
     }
 
     public function getContent()

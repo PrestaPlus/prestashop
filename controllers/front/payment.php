@@ -57,22 +57,29 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         }
 
         $orderAmount = $cart->getOrderTotal(true, Cart::BOTH);
-        $transaction = $this->preparePaymentObject($orderAmount, $paymentMethod, $idealIssuer, $cart, $customer, $cardToken);
-
-        $submittedTransaction = $this->submitTransaction($transaction, $paymentMethod);
-
-        Db::getInstance()->insert(
-            'spryng_payments',
-            array(
-                'transaction_id' => $submittedTransaction->_id,
-                'payment_method' => $paymentMethod,
-                'cart_id' => (int) $cart->id,
-                'order_id' => null,
-                'status' => $submittedTransaction->status,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            )
+        $transaction = $this->getTransactionData(
+            $orderAmount,
+            $paymentMethod,
+            $idealIssuer,
+            $cart,
+            $customer,
+            $cardToken
         );
+
+        $submittedTransaction = $this->module->transactionHelper->submitTransaction($transaction, $paymentMethod);
+        if (is_null($submittedTransaction))
+        {
+            die('Transaction was declined.');
+        }
+        else
+        {
+            $this->module->transactionHelper->storeTransaction(
+                $submittedTransaction->_id,
+                $paymentMethod,
+                $cart->id,
+                $submittedTransaction->status
+            );
+        }
 
         if (isset($submittedTransaction->details->approval_url))
         {
@@ -87,35 +94,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         }
     }
 
-    protected function submitTransaction($transaction, $method)
-    {
-        try
-        {
-            switch($method)
-            {
-                case 'creditcard':
-                    $newTransaction = $this->module->api->transaction->create($transaction);
-                    break;
-                case 'ideal':
-                    $newTransaction = $this->module->api->iDeal->create($transaction);
-                    break;
-                case 'paypal':
-                    $newTransaction = $this->module->api->Paypal->create($transaction);
-            }
-        }
-        catch(\SpryngPaymentsApiPhp\Exception\TransactionException $ex)
-        {
-            die('<p>Submitted transaction is invalid.</p>');
-        }
-        catch(\GuzzleHttp\Exception\ClientException $ex)
-        {
-            die('<p>Your payment was refused.</p>');
-        }
-
-        return $newTransaction;
-    }
-
-    protected function preparePaymentObject($amount, $method, $issuer, $cart, $customer, $cardToken)
+    public function getTransactionData($amount, $method, $issuer, $cart, $customer, $cardToken)
     {
         $payment = array();
         $payment['amount'] = (int) $amount * 100;
@@ -145,5 +124,33 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         }
 
         return $payment;
+    }
+
+    protected function submitTransaction($transaction, $method)
+    {
+        try
+        {
+            switch($method)
+            {
+                case 'creditcard':
+                    $newTransaction = $this->module->api->transaction->create($transaction);
+                    break;
+                case 'ideal':
+                    $newTransaction = $this->module->api->iDeal->create($transaction);
+                    break;
+                case 'paypal':
+                    $newTransaction = $this->module->api->Paypal->create($transaction);
+            }
+        }
+        catch(\SpryngPaymentsApiPhp\Exception\TransactionException $ex)
+        {
+            die('<p>Submitted transaction is invalid.</p>');
+        }
+        catch(\GuzzleHttp\Exception\ClientException $ex)
+        {
+            die('<p>Your payment was refused.</p>');
+        }
+
+        return $newTransaction;
     }
 }
