@@ -1,6 +1,6 @@
 <?php
 
-class TransactionHelper extends \Helper
+class TransactionHelper extends SpryngHelper
 {
     public function submitTransaction($transaction, $method)
     {

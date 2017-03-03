@@ -474,6 +474,55 @@ class SpryngPayments extends PaymentModule
         return true;
     }
 
+    private function initiateliseOrderStates()
+    {
+        $states = OrderState::getOrderStates(Configuration::get('PS_LANG_DEFAULT'));
+        $this->createOrderStatus('Settlement Completed', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_COMPLETED', '#5cb85c', true);
+        $this->createOrderStatus('Settlement Requested', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_REQUESTED', '#f0ad4e', false);
+        $this->createOrderStatus('Declined', $states, $this->getConfigKeyPrefix() .'DECLINED', '#d9534f', false);
+        $this->createOrderStatus('Initiated', $states, $this->getConfigKeyPrefix() .'INITIATED', '#f0ad4e', false);
+        $this->createOrderStatus('Authorized', $states, $this->getConfigKeyPrefix() .'AUTHORIZED', '#f0ad4e', false);
+        $this->createOrderStatus('Failed', $states, $this->getConfigKeyPrefix() .'FAILED', '#d9534f', false);
+        $this->createOrderStatus('Settlement Canceled', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_CANCELED', '#d9534f', false);
+        $this->createOrderStatus('Settlement Requested', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_REQUESTED', '#f0ad4e', false);
+        $this->createOrderStatus('Settlement Processed', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_PROCESSED', '#f0ad4e', false);
+        $this->createOrderStatus('Settlement Failed', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_FAILED', '#d9534f', false);
+        $this->createOrderStatus('Settlement Declined', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_DECLINED', '#d9534f', false);
+        $this->createOrderStatus('Voided', $states, $this->getConfigKeyPrefix() .'VOIDED', '#d9534f', false);
+        $this->createOrderStatus('Unknown', $states, $this->getConfigKeyPrefix() .'UNKNOWN', '#f0ad4e', false);
+    }
+
+    private function createOrderStatus($name, $states, $configName, $color, $paid)
+    {
+        foreach($states as $state)
+        {
+            if ($state['name'] == $name)
+            {
+                Configuration::updateValue($configName, $state['id_order_state']);
+
+                return;
+            }
+        }
+
+        $names = array();
+
+        $state = new OrderState();
+        foreach (Language::getLanguages(false) as $language)
+        {
+            $names[$language['id_lang']] = $name;
+        }
+        $state->name = $names;
+        $state->send_email = false;
+        $state->invoice = true;
+        $state->color = $color;
+        $state->unremovable = true;
+        $state->hidden = true;
+        $state->logable = true;
+        $state->paid = $paid;
+        $state->save();
+        Configuration::updateValue($configName, $state->id);
+    }
+
     /**
      * Uninstalls the plugin by dropping database table, unregistering hooks and deleting default configuration.
      *
