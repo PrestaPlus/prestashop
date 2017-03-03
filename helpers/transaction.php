@@ -12,10 +12,10 @@ class TransactionHelper extends \Helper
                     $newTransaction = $this->api->transaction->create($transaction);
                     break;
                 case 'ideal':
-                    $newTransaction = $this->api->iDeal->create($transaction);
+                    $newTransaction = $this->api->iDeal->initiate($transaction);
                     break;
                 case 'paypal':
-                    $newTransaction = $this->api->Paypal->create($transaction);
+                    $newTransaction = $this->api->Paypal->initiate($transaction);
             }
         }
         catch(\SpryngPaymentsApiPhp\Exception\TransactionException $ex)

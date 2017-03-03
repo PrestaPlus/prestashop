@@ -99,19 +99,19 @@
                     submitCheckout('creditcard', response._id);
                 }
             });
+        });
 
-            $('#spryng_ideal_submit_button').on('click', function(e) {
-                var issuer = $('#ideal_issuer').val();
+        $('#spryng_ideal_submit_button').on('click', function(e) {
+            var issuer = $('#ideal_issuer').val();
 
-                if (issuer === "" || issuer === undefined) {
-                    console.log('Something seems off');
-                    console.log(issuer);
-                    return false;
-                }
-                else {
-                    submitCheckout('ideal', false, issuer);
-                }
-            });
+            if (issuer === "" || issuer === undefined) {
+                console.log('Something seems off');
+                console.log(issuer);
+                return false;
+            }
+            else {
+                submitCheckout('ideal', false, issuer);
+            }
         });
     });
 

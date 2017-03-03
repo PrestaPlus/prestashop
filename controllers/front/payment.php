@@ -47,7 +47,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
             $paymentMethod = isset($_POST['method']) ? $_POST['method'] : null;
             if ($paymentMethod == 'ideal')
             {
-                $idealIssuer = $_POST['ideal_issuer'];
+                $idealIssuer = $_POST['issuer'];
                 if (empty($idealIssuer))
                     die('Could not initialize iDEAL payment.');
 
@@ -105,21 +105,22 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         $payment['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
         $payment['capture'] = true;
 
+
         switch($method)
         {
             case 'ideal':
                 $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'IDEAL_ACCOUNT');
-                $payment['details']['redirect_url'] = $this->context->link->getModuleLink('spryngpayments', 'return', ['cart_id' => $cart->id]);
+                $payment['details']['redirect_url'] = $this->getHttpsRedirectUrl($cart->id);
                 $payment['details']['issuer'] = $issuer;
                 break;
             case 'creditcard':
                 $payment['payment_product'] = 'card';
-                $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'CC_ACCOUNT');
+                $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'CC_ACCOUNT', true);
                 $payment['card'] = $cardToken;
                 break;
             case 'paypal':
-                $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'PAYPAL_ACCOUNT');
-                $payment['details']['redirect_url'] = $this->context->link->getModuleLink('spryngpayments', 'return', ['cart_id' => $cart->id]);
+                $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'PAYPAL_ACCOUNT', true);
+                $payment['details']['redirect_url'] = $this->getHttpsRedirectUrl($cart->id);
                 break;
         }
 
@@ -152,5 +153,17 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         }
 
         return $newTransaction;
+    }
+
+    protected function getHttpsRedirectUrl($cartId)
+    {
+        $url = $this->context->link->getModuleLink($this->module->name, 'return', ['cart_id' => $cartId]);
+
+        if (substr($url, 0, 5) === 'https')
+        {
+            return $url;
+        }
+
+        return str_replace('http', 'https', $url);
     }
 }
