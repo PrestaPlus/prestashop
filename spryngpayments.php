@@ -446,7 +446,7 @@ class SpryngPayments extends PaymentModule
         if (!parent::install())
         {
             PrestaShopLogger::addLog('Parent installation failed');
-            $this->_errors[] = 'An error occured during the initial installation of Spryng Payments for Prestashop.';
+            $this->_errors[] = 'An error occurred during the initial installation of Spryng Payments for Prestashop.';
             return false;
         }
 
@@ -467,7 +467,14 @@ class SpryngPayments extends PaymentModule
         if (!$this->createDatabaseTables())
         {
             PrestaShopLogger::addLog('Initializing database failed.');
-            $this->_errors[] = 'A database error occured while trying to initialize Spryng Payments.';
+            $this->_errors[] = 'A database error occurred while trying to initialize Spryng Payments.';
+            return false;
+        }
+
+        if (!$this->initiateliseOrderStates())
+        {
+            PrestaShopLogger::addLog('Initialising Order States failed.');
+            $this->_errors[] = 'An error occured while trying to initialise Spryng Order States.';
             return false;
         }
 
@@ -490,6 +497,8 @@ class SpryngPayments extends PaymentModule
         $this->createOrderStatus('Settlement Declined', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_DECLINED', '#d9534f', false);
         $this->createOrderStatus('Voided', $states, $this->getConfigKeyPrefix() .'VOIDED', '#d9534f', false);
         $this->createOrderStatus('Unknown', $states, $this->getConfigKeyPrefix() .'UNKNOWN', '#f0ad4e', false);
+
+        return true;
     }
 
     private function createOrderStatus($name, $states, $configName, $color, $paid)
@@ -511,6 +520,7 @@ class SpryngPayments extends PaymentModule
         {
             $names[$language['id_lang']] = $name;
         }
+        $state->module_name = $this->name;
         $state->name = $names;
         $state->send_email = false;
         $state->invoice = true;
