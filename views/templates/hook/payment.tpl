@@ -11,7 +11,6 @@
         color: #333333;
     }
 </style>
-{var_dump($configuration)}
 {foreach $configuration as $name => $gateway}
     {if $gateway['enabled']}
         <p class="payment_module">

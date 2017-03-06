@@ -46,6 +46,38 @@ class TransactionHelper extends SpryngHelper
         );
     }
 
+    public function setOrderIdForCartId($cartId)
+    {
+        Db::getInstance()->update(
+            _DB_PREFIX_ . 'spryng_payments',
+            array('order_id' => $this->getOrderIdForCartId($cartId)),
+            'cart_id = ' . $cartId
+        );
+
+        return true;
+    }
+
+    public function getOrderIdForCartId($cartId)
+    {
+        $orderData = Db::getInstance()->executeS(sprintf(
+            'SELECT `%s` FROM `%s` WHERE `%s` = %d ORDER BY `%s` DESC LIMIT 1;',
+            'id_order',
+            _DB_PREFIX_ . 'orders',
+            'id_cart',
+            $cartId,
+            'date_add'
+        ));
+
+        if (count($orderData) !== 1)
+        {
+            return null;
+        }
+        else
+        {
+            return (int) $orderData[0]['id_order'];
+        }
+    }
+
     public function findTransactionByCartId($cartId)
     {
         $data = Db::getInstance()->executeS(
@@ -76,5 +108,26 @@ class TransactionHelper extends SpryngHelper
         }
 
         return $transaction;
+    }
+
+    public function findOrderDetailsByTransactionId($transactionId)
+    {
+        $data = Db::getInstance()->executeS(
+            sprintf('SELECT * FROM `%s` WHERE `%s` = "%s" ORDER BY `%s` DESC LIMIT 1;',
+                _DB_PREFIX_ . 'spryng_payments',
+                'transaction_id',
+                $transactionId,
+                'created_at'
+            )
+        );
+
+        if (count($data) !== 1)
+        {
+            return null;
+        }
+        else
+        {
+            return $data[0];
+        }
     }
 }

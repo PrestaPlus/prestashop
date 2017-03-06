@@ -491,7 +491,6 @@ class SpryngPayments extends PaymentModule
         $this->createOrderStatus('Authorized', $states, $this->getConfigKeyPrefix() .'AUTHORIZED', '#f0ad4e', false);
         $this->createOrderStatus('Failed', $states, $this->getConfigKeyPrefix() .'FAILED', '#d9534f', false);
         $this->createOrderStatus('Settlement Canceled', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_CANCELED', '#d9534f', false);
-        $this->createOrderStatus('Settlement Requested', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_REQUESTED', '#f0ad4e', false);
         $this->createOrderStatus('Settlement Processed', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_PROCESSED', '#f0ad4e', false);
         $this->createOrderStatus('Settlement Failed', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_FAILED', '#d9534f', false);
         $this->createOrderStatus('Settlement Declined', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_DECLINED', '#d9534f', false);
@@ -531,6 +530,24 @@ class SpryngPayments extends PaymentModule
         $state->paid = $paid;
         $state->save();
         Configuration::updateValue($configName, $state->id);
+    }
+
+    public function changeOrderStatus($orderId, $status)
+    {
+        $statusId = (int) $this->getConfigurationValue($this->getConfigKeyPrefix() . $status);
+
+        if (is_null($statusId) || empty($statusId) || $statusId === 0)
+        {
+            return false;
+        }
+
+        $history = new OrderHistory();
+        $history->id_order = $orderId;
+        $history->id_order_state = $statusId;
+        $history->changeIdOrderState($statusId, $orderId);
+        $history->add();
+
+        return $history;
     }
 
     /**
@@ -712,11 +729,6 @@ class SpryngPayments extends PaymentModule
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_DESCRIPTION') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ORGANISATION');
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ACCOUNT');
-    }
-
-    public function changeOrderStatus($orderId, $newStatus)
-    {
-
     }
 
     protected function initializeConfigurationValue($key, $value)
