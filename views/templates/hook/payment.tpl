@@ -19,7 +19,6 @@
                     title="{$gateway['title']}"
                     x-method="{$name}"
                     {if !$gateway['toggle']}
-                        onclick="submitCheckout('{$name}');"
                         href="#"
                     {else}
                         x-toggle="true"
@@ -70,7 +69,7 @@
                 e.preventDefault();
             }
             else {
-                submitCheckout($(this).attr('method'));
+                submitCheckout($(this).attr('x-method'), false, false);
             }
         });
 

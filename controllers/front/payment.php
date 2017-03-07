@@ -121,6 +121,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
             case 'paypal':
                 $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'PAYPAL_ACCOUNT', true);
                 $payment['details']['redirect_url'] = $this->getHttpsRedirectUrl($cart->id);
+                $payment['details']['capture_now'] = true;
                 break;
         }
 
