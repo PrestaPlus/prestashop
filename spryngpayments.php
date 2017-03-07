@@ -88,7 +88,6 @@ class SpryngPayments extends PaymentModule
             {
                 if (substr($key, 0, strlen($prefix)) == $prefix)
                 {
-                    PrestaShopLogger::addLog(sprintf('Updating %s with value %s', $key, $post));
                     Configuration::updateValue($key, $post);
                 }
             }
