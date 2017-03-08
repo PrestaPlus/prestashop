@@ -8,6 +8,7 @@ if (!defined('_PS_VERSION_'))
 require_once('vendor/autoload.php');
 require_once('helpers/helper.php');
 require_once('helpers/transaction.php');
+require_once('helpers/customer.php');
 
 class SpryngPayments extends PaymentModule
 {
@@ -25,7 +26,8 @@ class SpryngPayments extends PaymentModule
     public $gateways = [
         'CREDIT_CARD',
         'IDEAL',
-        'PAYPAL'
+        'PAYPAL',
+        'SEPA'
     ];
     public $iDealIssuers = [
         'ABNANL2A' => 'ABN Ambro',
@@ -41,6 +43,8 @@ class SpryngPayments extends PaymentModule
     ];
 
     public $transactionHelper;
+
+    public $customerHelper;
 
     public function __construct()
     {
@@ -59,6 +63,7 @@ class SpryngPayments extends PaymentModule
         );
 
         $this->transactionHelper = new TransactionHelper($this->api);
+        $this->customerHelper = new CustomerHelper($this->api);
     }
 
     public function getContent()
@@ -317,6 +322,53 @@ class SpryngPayments extends PaymentModule
                         'disabled' => $accountSelectorDisabled,
                         'options' => $accounts
                     ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'SEPA Enabled',
+                        'name' => $this->getConfigKeyPrefix().'SEPA_ENABLED',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'value' => '1',
+                                    'name' => 'Enabled'
+                                ),
+                                array(
+                                    'value' => '0',
+                                    'name' => 'Disabled'
+                                )
+                            ),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => 'SEPA Title',
+                        'name' => $this->getConfigKeyPrefix().'SEPA_TITLE',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'SEPA_TITLE')
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => 'SEPA Description',
+                        'name' => $this->getConfigKeyPrefix().'SEPA_DESCRIPTION',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'SEPA_DESCRIPTION')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'SEPA Organisation',
+                        'name' => $this->getConfigKeyPrefix().'SEPA_ORGANISATION',
+                        'disabled' => $organisationSelectorDisabled,
+                        'options' => $organisations
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'SEPA Account',
+                        'name' => $this->getConfigKeyPrefix().'SEPA_ACCOUNT',
+                        'disabled' => $accountSelectorDisabled,
+                        'options' => $accounts
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),
@@ -368,6 +420,11 @@ class SpryngPayments extends PaymentModule
             $prefix . 'PAYPAL_ACCOUNT' => Tools::getValue($prefix . 'PAYPAL_ACCOUNT', Configuration::get($prefix . 'PAYPAL_ACCOUNT')),
             $prefix . 'PAYPAL_TITLE' => Tools::getValue($prefix . 'PAYPAL_TITLE', Configuration::get($prefix . 'PAYPAL_TITLE')),
             $prefix . 'PAYPAL_DESCRIPTION' => Tools::getValue($prefix . 'PAYPAL_DESCRIPTION', Configuration::get($prefix . 'PAYPAL_DESCRIPTION')),
+            $prefix . 'SEPA_ENABLED' => Tools::getValue($prefix . 'SEPA_ENABLED', Configuration::get($prefix . 'SEPA_ENABLED')),
+            $prefix . 'SEPA_ORGANISATION' => Tools::getValue($prefix . 'SEPA_ORGANISATION', Configuration::get($prefix . 'SEPA_ORGANISATION')),
+            $prefix . 'SEPA_ACCOUNT' => Tools::getValue($prefix . 'SEPA_ACCOUNT', Configuration::get($prefix . 'SEPA_ACCOUNT')),
+            $prefix . 'SEPA_TITLE' => Tools::getValue($prefix . 'SEPA_TITLE', Configuration::get($prefix . 'SEPA_TITLE')),
+            $prefix . 'SEPA_DESCRIPTION' => Tools::getValue($prefix . 'SEPA_DESCRIPTION', Configuration::get($prefix . 'SEPA_DESCRIPTION')),
         );
     }
 
@@ -693,8 +750,15 @@ class SpryngPayments extends PaymentModule
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ENABLED', false) &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_TITLE', 'Spryng Payments - PayPal') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_DESCRIPTION', 'Pay safely using PayPal') &&
-            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ORGANISATION', '');
-            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ACCOUNT', '');
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ORGANISATION', '') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ACCOUNT', '') &&
+
+            // SEPA settings
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_ENABLED', false) &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_TITLE', 'Spryng Payments - SEPA') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_DESCRIPTION', 'Pay with European SEPA') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_ORGANISATION', '') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_ACCOUNT', '');
     }
 
     protected function deleteConfiguration()
@@ -726,8 +790,15 @@ class SpryngPayments extends PaymentModule
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ENABLED') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_TITLE') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_DESCRIPTION') &&
-            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ORGANISATION');
-            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ACCOUNT');
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ORGANISATION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'PAYPAL_ACCOUNT') &&
+
+            // SEPA settings
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_ENABLED') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_TITLE') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_DESCRIPTION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_ORGANISATION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_ACCOUNT');
     }
 
     protected function initializeConfigurationValue($key, $value)
@@ -791,6 +862,14 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ACCOUNT'),
+                'toggle' => false
+            ),
+            'sepa' => array(
+                'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ENABLED'),
+                'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_TITLE'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_DESCRIPTION'),
+                'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ORGANISATION'),
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ACCOUNT'),
                 'toggle' => false
             ),
         );

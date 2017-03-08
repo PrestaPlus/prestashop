@@ -123,6 +123,11 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
                 $payment['details']['redirect_url'] = $this->getHttpsRedirectUrl($cart->id);
                 $payment['details']['capture_now'] = true;
                 break;
+            case 'sepa':
+            case 'slimpay':
+                $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'SEPA_ACCOUNT', true);
+                $payment['details']['redirect_url'] = $this->getHttpsRedirectUrl($cart->id);
+                break;
         }
 
         return $payment;
