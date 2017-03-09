@@ -9,6 +9,7 @@ require_once('vendor/autoload.php');
 require_once('helpers/helper.php');
 require_once('helpers/transaction.php');
 require_once('helpers/customer.php');
+require_once('helpers/address.php');
 
 class SpryngPayments extends PaymentModule
 {
@@ -46,6 +47,8 @@ class SpryngPayments extends PaymentModule
 
     public $customerHelper;
 
+    public $addressHelper;
+
     public function __construct()
     {
         parent::__construct();
@@ -64,6 +67,7 @@ class SpryngPayments extends PaymentModule
 
         $this->transactionHelper = new TransactionHelper($this->api);
         $this->customerHelper = new CustomerHelper($this->api);
+        $this->addressHelper = new AddressHelper($this->api);
     }
 
     public function getContent()
@@ -487,11 +491,6 @@ class SpryngPayments extends PaymentModule
         return $accountOptions;
     }
 
-    private function getSettingValue($setting)
-    {
-        return Configuration::get($setting);
-    }
-
     /**
      * Installs the plugin by creating database table for payments, registering hooks and initializing default configuration.
      *
@@ -652,16 +651,23 @@ class SpryngPayments extends PaymentModule
     {
         $queries = [
             sprintf("
-        CREATE TABLE IF NOT EXISTS `%s` (
-          `transaction_id` VARCHAR(255) NOT NULL PRIMARY KEY,
-          `payment_method` VARCHAR(255) NOT NULL,
-          `cart_id` INT(64),
-          `order_id` INT(64),
-          `status` VARCHAR(255) NOT NULL,
-          `created_at` DATETIME NOT NULL,
-          `updated_at` DATETIME NOT NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                CREATE TABLE IF NOT EXISTS `%s` (
+                    `transaction_id` VARCHAR(255) NOT NULL PRIMARY KEY,
+                    `payment_method` VARCHAR(255) NOT NULL,
+                    `cart_id` INT(64),
+                    `order_id` INT(64),
+                    `status` VARCHAR(255) NOT NULL,
+                    `created_at` DATETIME NOT NULL,
+                    `updated_at` DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                 _DB_PREFIX_.'spryng_payments'
+            ),
+            sprintf("
+                CREATE TABLE IF NOT EXISTS `%s` (
+                    `presta_customer_id` INT(10) UNSIGNED NOT NULL PRIMARY KEY,
+                    `spryng_customer_id` VARCHAR(30) NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
+                _DB_PREFIX_.'spryng_customers'
             )
         ];
 
@@ -673,11 +679,15 @@ class SpryngPayments extends PaymentModule
                 $this->_errors[] = sprintf('Could not initialize database. Query: %s.', $query);
                 return false;
             }
+            else
+            {
+                PrestaShopLogger::addLog('Executed: %s', $query);
+            }
         }
 
         return true;
     }
-    
+
     protected function _registerHooks()
     {
         return
@@ -700,14 +710,14 @@ class SpryngPayments extends PaymentModule
             $this->_unregisterHook('displayBackOfficeHeader') &&
             $this->_unregisterHook('displayOrderConfirmation');
     }
-    
+
     protected function _registerHook($name, $standard = true)
     {
         if (!$standard && Hook::getIdByName($name))
         {
             return true;
         }
-        
+
         return $this->registerHook($name);
     }
 
@@ -904,6 +914,6 @@ class SpryngPayments extends PaymentModule
 
     public function displayOrderConfirmation()
     {
-        
+
     }
 }
