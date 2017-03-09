@@ -66,6 +66,11 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
             $cardToken
         );
 
+        if (is_null($transaction))
+        {
+            die('Could not initialise a valid transaction.');
+        }
+
         $submittedTransaction = $this->module->transactionHelper->submitTransaction($transaction, $paymentMethod);
         if (is_null($submittedTransaction))
         {
@@ -127,6 +132,14 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
             case 'slimpay':
                 $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'SEPA_ACCOUNT', true);
                 $payment['details']['redirect_url'] = $this->getHttpsRedirectUrl($cart->id);
+
+                $customer = $this->module->customerHelper->getCustomer($cart, $payment['account']);
+
+                if (is_null($customer))
+                {
+                    return null;
+                }
+                $payment['customer'] = $customer;
                 break;
         }
 

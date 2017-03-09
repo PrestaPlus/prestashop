@@ -16,6 +16,10 @@ class TransactionHelper extends SpryngHelper
                     break;
                 case 'paypal':
                     $newTransaction = $this->api->Paypal->initiate($transaction);
+                    break;
+                case 'sepa':
+                case 'slimpay':
+                    $newTransaction = $this->api->Sepa->initiate($transaction);
             }
         }
         catch(\SpryngPaymentsApiPhp\Exception\TransactionException $ex)
