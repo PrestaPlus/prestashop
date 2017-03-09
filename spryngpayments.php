@@ -10,6 +10,7 @@ require_once('helpers/helper.php');
 require_once('helpers/transaction.php');
 require_once('helpers/customer.php');
 require_once('helpers/address.php');
+require_once('helpers/goods.php');
 
 class SpryngPayments extends PaymentModule
 {
@@ -28,7 +29,8 @@ class SpryngPayments extends PaymentModule
         'CREDIT_CARD',
         'IDEAL',
         'PAYPAL',
-        'SEPA'
+        'SEPA',
+        'KLARNA'
     ];
     public $iDealIssuers = [
         'ABNANL2A' => 'ABN Ambro',
@@ -49,6 +51,8 @@ class SpryngPayments extends PaymentModule
 
     public $addressHelper;
 
+    public $goodsHelper;
+
     public function __construct()
     {
         parent::__construct();
@@ -68,6 +72,7 @@ class SpryngPayments extends PaymentModule
         $this->transactionHelper = new TransactionHelper($this->api);
         $this->customerHelper = new CustomerHelper($this->api);
         $this->addressHelper = new AddressHelper($this->api);
+        $this->goodsHelper = new GoodsHelper($this->api);
     }
 
     public function getContent()
@@ -373,6 +378,53 @@ class SpryngPayments extends PaymentModule
                         'disabled' => $accountSelectorDisabled,
                         'options' => $accounts
                     ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'Klarna Enabled',
+                        'name' => $this->getConfigKeyPrefix().'KLARNA_ENABLED',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'value' => '1',
+                                    'name' => 'Enabled'
+                                ),
+                                array(
+                                    'value' => '0',
+                                    'name' => 'Disabled'
+                                )
+                            ),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => 'Klarna Title',
+                        'name' => $this->getConfigKeyPrefix().'KLARNA_TITLE',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'KLARNA_TITLE')
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => 'Klarna Description',
+                        'name' => $this->getConfigKeyPrefix().'KLARNA_DESCRIPTION',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'KLARNA_DESCRIPTION')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'Klarna Organisation',
+                        'name' => $this->getConfigKeyPrefix().'KLARNA_ORGANISATION',
+                        'disabled' => $organisationSelectorDisabled,
+                        'options' => $organisations
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'Klarna Account',
+                        'name' => $this->getConfigKeyPrefix().'KLARNA_ACCOUNT',
+                        'disabled' => $accountSelectorDisabled,
+                        'options' => $accounts
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),
@@ -429,6 +481,11 @@ class SpryngPayments extends PaymentModule
             $prefix . 'SEPA_ACCOUNT' => Tools::getValue($prefix . 'SEPA_ACCOUNT', Configuration::get($prefix . 'SEPA_ACCOUNT')),
             $prefix . 'SEPA_TITLE' => Tools::getValue($prefix . 'SEPA_TITLE', Configuration::get($prefix . 'SEPA_TITLE')),
             $prefix . 'SEPA_DESCRIPTION' => Tools::getValue($prefix . 'SEPA_DESCRIPTION', Configuration::get($prefix . 'SEPA_DESCRIPTION')),
+            $prefix . 'KLARNA_ENABLED' => Tools::getValue($prefix . 'KLARNA_ENABLED', Configuration::get($prefix . 'KLARNA_ENABLED')),
+            $prefix . 'KLARNA_ORGANISATION' => Tools::getValue($prefix . 'KLARNA_ORGANISATION', Configuration::get($prefix . 'KLARNA_ORGANISATION')),
+            $prefix . 'KLARNA_ACCOUNT' => Tools::getValue($prefix . 'KLARNA_ACCOUNT', Configuration::get($prefix . 'KLARNA_ACCOUNT')),
+            $prefix . 'KLARNA_TITLE' => Tools::getValue($prefix . 'KLARNA_TITLE', Configuration::get($prefix . 'KLARNA_TITLE')),
+            $prefix . 'KLARNA_DESCRIPTION' => Tools::getValue($prefix . 'KLARNA_DESCRIPTION', Configuration::get($prefix . 'KLARNA_DESCRIPTION')),
         );
     }
 
@@ -768,7 +825,14 @@ class SpryngPayments extends PaymentModule
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_TITLE', 'Spryng Payments - SEPA') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_DESCRIPTION', 'Pay with European SEPA') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_ORGANISATION', '') &&
-            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_ACCOUNT', '');
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SEPA_ACCOUNT', '') &&
+
+            // KLARNA settings
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ENABLED', false) &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_TITLE', 'Spryng Payments - KLARNA') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_DESCRIPTION', 'Pay with European KLARNA') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ORGANISATION', '') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ACCOUNT', '');
     }
 
     protected function deleteConfiguration()
@@ -808,7 +872,14 @@ class SpryngPayments extends PaymentModule
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_TITLE') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_DESCRIPTION') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_ORGANISATION') &&
-            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_ACCOUNT');
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SEPA_ACCOUNT') &&
+
+            // KLARNA settings
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ENABLED') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_TITLE') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_DESCRIPTION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ORGANISATION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ACCOUNT');
     }
 
     protected function initializeConfigurationValue($key, $value)
@@ -882,6 +953,16 @@ class SpryngPayments extends PaymentModule
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ACCOUNT'),
                 'toggle' => false
             ),
+            'klarna' => array(
+                'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ENABLED'),
+                'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_TITLE'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_DESCRIPTION'),
+                'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ORGANISATION'),
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'),
+                'toggle' => true,
+                'pclasses' => $this->api->Klarna->getPClasses($this->getConfigurationValue(
+                    $this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'))
+            )
         );
 
         $this->smarty->assign(array(
