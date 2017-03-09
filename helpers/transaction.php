@@ -20,6 +20,10 @@ class TransactionHelper extends SpryngHelper
                 case 'sepa':
                 case 'slimpay':
                     $newTransaction = $this->api->Sepa->initiate($transaction);
+                    break;
+                case 'klarna':
+                    $newTransaction = $this->api->Klarna->initiate($transaction);
+                    break;
             }
         }
         catch(\SpryngPaymentsApiPhp\Exception\TransactionException $ex)
@@ -28,6 +32,7 @@ class TransactionHelper extends SpryngHelper
         }
         catch(\GuzzleHttp\Exception\ClientException $ex)
         {
+            var_dump($ex->getMessage());
             return null;
         }
 

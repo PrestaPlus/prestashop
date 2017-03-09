@@ -30,6 +30,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         $cart = $this->context->cart;
         $customer = new Customer($cart->id_customer);
         $idealIssuer = null;
+        $pclass = null;
 
         if (
             isset($_POST['method']) &&
@@ -54,6 +55,12 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
                 if (!self::$ISSUERS[$idealIssuer])
                     die('Invalid issuer');
             }
+            else if ($paymentMethod == 'klarna')
+            {
+                $pclass = $_POST['pclass'];
+                if (empty($pclass))
+                    die('Could not initiate Klarna transaction');
+            }
         }
 
         $orderAmount = $cart->getOrderTotal(true, Cart::BOTH);
@@ -63,7 +70,8 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
             $idealIssuer,
             $cart,
             $customer,
-            $cardToken
+            $cardToken,
+            $pclass
         );
 
         if (is_null($transaction))
@@ -99,17 +107,19 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         }
     }
 
-    public function getTransactionData($amount, $method, $issuer, $cart, $customer, $cardToken)
+    public function getTransactionData($amount, $method, $issuer, $cart, $customer, $cardToken, $pclass)
     {
+        $goodsList = $this->module->goodsHelper->getGoodsList($cart->getProducts());
+        $total = $goodsList->getTotalAmount();
+
         $payment = array();
-        $payment['amount'] = (int) $amount * 100;
+        $payment['amount'] = (int) $total;
         $payment['customer_ip'] = $_SERVER['REMOTE_ADDR'];
         $payment['dynamic_descriptor'] = $cart->id.'_'.$customer->secure_key;
         $payment['dynamic_descriptor'] = 'TEST_234';
         $payment['merchant_reference'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'MERCHANT_REFERENCE');
         $payment['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
         $payment['capture'] = true;
-
 
         switch($method)
         {
@@ -133,6 +143,19 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
                 $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'SEPA_ACCOUNT', true);
                 $payment['details']['redirect_url'] = $this->getHttpsRedirectUrl($cart->id);
 
+                $customer = $this->module->customerHelper->getCustomer($cart, $payment['account']);
+
+                if (is_null($customer))
+                {
+                    return null;
+                }
+                $payment['customer'] = $customer;
+                break;
+            case 'klarna':
+                $payment['account'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'KLARNA_ACCOUNT', true);
+                $payment['details']['redirect_url'] = $this->getHttpsRedirectUrl($cart->id);
+                $payment['details']['pclass'] = $pclass;
+                $payment['details']['goods_list'] = $this->module->goodsHelper->getGoodsList($cart->getProducts());
                 $customer = $this->module->customerHelper->getCustomer($cart, $payment['account']);
 
                 if (is_null($customer))

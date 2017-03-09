@@ -141,6 +141,7 @@ class CustomerHelper extends SpryngHelper
         $customer['account'] = $account;
         $customer['first_name'] = $prestaCustomer->firstname;
         $customer['last_name'] = $prestaCustomer->lastname;
+        $customer['date_of_birth'] = $prestaCustomer->birthday;
         $customer['email_address'] = $prestaCustomer->email;
         $customer['phone_number'] = $this->parsePhoneNumber($countryCode, $usedPhoneNumber);
         $customer['country_code'] = $countryCode;

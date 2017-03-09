@@ -50,7 +50,7 @@ class GoodsHelper extends SpryngHelper
 
         $good->discount = $discountRate;
         $good->reference = $product['reference'];
-        $good->title = $product['description_short'];
+        $good->title = strip_tags($product['description_short']);
         $good->quantity = $product['quantity'];
 
         return $good;

@@ -43,6 +43,16 @@
                         {/foreach}
                     </select>
                     <button id="spryng_ideal_submit_button" class="btn btn-info">Submit</button>
+                {elseif $name == 'klarna'}
+                    <select name="klarna_pclass" id="klarna_pclass">
+                        <option value="">Select your payment plan</option>
+                        {foreach $gateway['pclasses'] as $pclass}
+                            <option value="{$pclass->_id}">
+                                {$pclass->description} ({($pclass->interest_rate / 100)}% interest)
+                            </option>
+                        {/foreach}
+                    </select>
+                    <button id="spryng_klarna_submit_button" class="btn btn-info">Submit</button>
                 {/if}
             </div>
         {/if}
@@ -103,24 +113,33 @@
             var issuer = $('#ideal_issuer').val();
 
             if (issuer === "" || issuer === undefined) {
-                console.log('Something seems off');
-                console.log(issuer);
                 return false;
             }
             else {
                 submitCheckout('ideal', false, issuer);
             }
         });
+        $('#spryng_klarna_submit_button').on('click', function(e) {
+            var pclass = $('#klarna_pclass').val();
+
+            if (pclass === "" || pclass === undefined) {
+                return false;
+            }
+            else {
+                submitCheckout('klarna', false, false, pclass);
+            }
+        });
     });
 
-    function submitCheckout(method, cardToken = false, issuer = false)
+    function submitCheckout(method, cardToken = false, issuer = false, pclass = false)
     {
         var formMethod = 'POST';
         var action = "{$link->getModuleLink('spryngpayments', 'payment')}";
         var params = {
             'method': method,
             'cardToken': cardToken,
-            'issuer': issuer
+            'issuer': issuer,
+            'pclass': pclass
         };
 
         var form = document.createElement('form');
