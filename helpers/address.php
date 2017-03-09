@@ -35,4 +35,48 @@ class AddressHelper extends Helper
 
         return $result[0]['iso_code'];
     }
+
+    /**
+     * Get's an address instance based on a Cart.
+     *
+     * @param Cart $cart
+     * @return Address|null
+     */
+    public function getInvoiceAddressForCart(Cart $cart)
+    {
+        $address = new Address($cart->id_address_invoice);
+
+        if (!Validate::isLoadedObject($address))
+        {
+            return null;
+        }
+
+        return $address;
+    }
+
+    /**
+     * Parses international postal codes for Spryng Customers.
+     *
+     * @param $countryCode
+     * @param $postalCode
+     * @return string
+     */
+    public function parsePostalCode($countryCode, $postalCode)
+    {
+        switch($countryCode)
+        {
+            case 'NL':
+                if (strlen($postalCode) === 6)
+                {
+                    return wordwrap($postalCode, 4, ' ', true);
+                }
+                else
+                {
+                    return $postalCode;
+                }
+                break;
+            default:
+                return $postalCode;
+        }
+    }
 }
