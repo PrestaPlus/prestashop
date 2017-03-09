@@ -10,6 +10,7 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "spryng/spryng-payments-api-php": "dev-master"
+        "spryng/spryng-payments-api-php": "dev-master",
+        "giggsey/libphonenumber-for-php": "^8.3"
     }
 }
