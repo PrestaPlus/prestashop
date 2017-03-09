@@ -100,7 +100,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         }
         else
         {
-            if ($paymentMethod == 'creditcard')
+            if ($paymentMethod == 'creditcard' || $paymentMethod == 'klarna')
             {
                 Tools::redirect($this->context->link->getModuleLink('spryngpayments', 'return', ['cart_id' => $cart->id]));
             }
