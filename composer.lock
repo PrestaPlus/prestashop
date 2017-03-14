@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "8c9222b6364af3d230112cd9a780551a01553c39"
+                "reference": "fa1629e56c81d0b72e39298a62aba241656f1834"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/8c9222b6364af3d230112cd9a780551a01553c39",
-                "reference": "8c9222b6364af3d230112cd9a780551a01553c39",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/fa1629e56c81d0b72e39298a62aba241656f1834",
+                "reference": "fa1629e56c81d0b72e39298a62aba241656f1834",
                 "shasum": ""
             },
             "require": {
@@ -73,7 +73,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2017-03-01 08:22:01"
+            "time": "2017-03-14 11:28:30"
         },
         {
             "name": "giggsey/locale",
@@ -361,12 +361,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/spryngpayments/php.git",
-                "reference": "470a8180622f7a57d04d1bdf98866637c2fa61a8"
+                "reference": "41b08430f626b2dcb4199dd32cb70a57b26fff89"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spryngpayments/php/zipball/470a8180622f7a57d04d1bdf98866637c2fa61a8",
-                "reference": "470a8180622f7a57d04d1bdf98866637c2fa61a8",
+                "url": "https://api.github.com/repos/spryngpayments/php/zipball/41b08430f626b2dcb4199dd32cb70a57b26fff89",
+                "reference": "41b08430f626b2dcb4199dd32cb70a57b26fff89",
                 "shasum": ""
             },
             "require": {
@@ -392,7 +392,7 @@
                 }
             ],
             "description": "A PHP interface to the Spryng Payments platform",
-            "time": "2017-03-07 15:15:00"
+            "time": "2017-03-10 15:30:30"
         }
     ],
     "packages-dev": [],

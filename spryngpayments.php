@@ -30,7 +30,8 @@ class SpryngPayments extends PaymentModule
         'IDEAL',
         'PAYPAL',
         'SEPA',
-        'KLARNA'
+        'KLARNA',
+        'SOFORT'
     ];
     public $iDealIssuers = [
         'ABNANL2A' => 'ABN Ambro',
@@ -425,6 +426,60 @@ class SpryngPayments extends PaymentModule
                         'disabled' => $accountSelectorDisabled,
                         'options' => $accounts
                     ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'SOFORT Enabled',
+                        'name' => $this->getConfigKeyPrefix().'SOFORT_ENABLED',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'value' => '1',
+                                    'name' => 'Enabled'
+                                ),
+                                array(
+                                    'value' => '0',
+                                    'name' => 'Disabled'
+                                )
+                            ),
+                            'id' => 'value',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => 'SOFORT Title',
+                        'name' => $this->getConfigKeyPrefix().'SOFORT_TITLE',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'SOFORT_TITLE')
+                    ),
+                    array(
+                        'type' => 'textarea',
+                        'label' => 'SOFORT Description',
+                        'name' => $this->getConfigKeyPrefix().'SOFORT_DESCRIPTION',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'SOFORT_DESCRIPTION')
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => 'SOFORT Project ID',
+                        'name' => $this->getConfigKeyPrefix().'SOFORT_PROJECT_ID',
+                        'required' => false,
+                        'value' => $this->getConfigurationValue($this->getConfigKeyPrefix().'SOFORT_PROJECT_ID')
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'SOFORT Organisation',
+                        'name' => $this->getConfigKeyPrefix().'SOFORT_ORGANISATION',
+                        'disabled' => $organisationSelectorDisabled,
+                        'options' => $organisations
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => 'SOFORT Account',
+                        'name' => $this->getConfigKeyPrefix().'SOFORT_ACCOUNT',
+                        'disabled' => $accountSelectorDisabled,
+                        'options' => $accounts
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),
@@ -486,6 +541,12 @@ class SpryngPayments extends PaymentModule
             $prefix . 'KLARNA_ACCOUNT' => Tools::getValue($prefix . 'KLARNA_ACCOUNT', Configuration::get($prefix . 'KLARNA_ACCOUNT')),
             $prefix . 'KLARNA_TITLE' => Tools::getValue($prefix . 'KLARNA_TITLE', Configuration::get($prefix . 'KLARNA_TITLE')),
             $prefix . 'KLARNA_DESCRIPTION' => Tools::getValue($prefix . 'KLARNA_DESCRIPTION', Configuration::get($prefix . 'KLARNA_DESCRIPTION')),
+            $prefix . 'SOFORT_ENABLED' => Tools::getValue($prefix . 'SOFORT_ENABLED', Configuration::get($prefix . 'SOFORT_ENABLED')),
+            $prefix . 'SOFORT_ORGANISATION' => Tools::getValue($prefix . 'SOFORT_ORGANISATION', Configuration::get($prefix . 'SOFORT_ORGANISATION')),
+            $prefix . 'SOFORT_ACCOUNT' => Tools::getValue($prefix . 'SOFORT_ACCOUNT', Configuration::get($prefix . 'SOFORT_ACCOUNT')),
+            $prefix . 'SOFORT_TITLE' => Tools::getValue($prefix . 'SOFORT_TITLE', Configuration::get($prefix . 'SOFORT_TITLE')),
+            $prefix . 'SOFORT_DESCRIPTION' => Tools::getValue($prefix . 'SOFORT_DESCRIPTION', Configuration::get($prefix . 'SOFORT_DESCRIPTION')),
+            $prefix . 'SOFORT_PROJECT_ID' => Tools::getValue($prefix . 'SOFORT_PROJECT_ID', Configuration::get($prefix . 'SOFORT_PROJECT_ID')),
         );
     }
 
@@ -832,7 +893,15 @@ class SpryngPayments extends PaymentModule
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_TITLE', 'Spryng Payments - KLARNA') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_DESCRIPTION', 'Pay with European KLARNA') &&
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ORGANISATION', '') &&
-            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ACCOUNT', '');
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ACCOUNT', '') &&
+
+            // SOFORT settings
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SOFORT_ENABLED', false) &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SOFORT_TITLE', 'Spryng Payments - SOFORT') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SOFORT_DESCRIPTION', 'Pay with European SOFORT') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SOFORT_PROJECT_ID', 'Your SOFORT Project ID') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SOFORT_ORGANISATION', '') &&
+            $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SOFORT_ACCOUNT', '');
     }
 
     protected function deleteConfiguration()
@@ -879,7 +948,15 @@ class SpryngPayments extends PaymentModule
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_TITLE') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_DESCRIPTION') &&
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ORGANISATION') &&
-            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ACCOUNT');
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'KLARNA_ACCOUNT') &&
+
+            // SOFORT settings
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SOFORT_ENABLED') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SOFORT_TITLE') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SOFORT_DESCRIPTION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SOFORT_PROJECT_ID') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SOFORT_ORGANISATION') &&
+            $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SOFORT_ACCOUNT');
     }
 
     protected function initializeConfigurationValue($key, $value)
@@ -962,6 +1039,13 @@ class SpryngPayments extends PaymentModule
                 'toggle' => true,
                 'pclasses' => $this->api->Klarna->getPClasses($this->getConfigurationValue(
                     $this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'))
+            ),
+            'sofort' => array(
+                'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ENABLED'),
+                'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_TITLE'),
+                'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_DESCRIPTION'),
+                'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ORGANISATION'),
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ACCOUNT')
             )
         );
 

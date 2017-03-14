@@ -24,15 +24,17 @@ class TransactionHelper extends SpryngHelper
                 case 'klarna':
                     $newTransaction = $this->api->Klarna->initiate($transaction);
                     break;
+                case 'sofort':
+                    $newTransaction = $this->api->SOFORT->initiate($transaction);
+                    break;
             }
         }
         catch(\SpryngPaymentsApiPhp\Exception\TransactionException $ex)
         {
             return null;
         }
-        catch(\GuzzleHttp\Exception\ClientException $ex)
+        catch(\GuzzleHttp\Exception\RequestException $ex)
         {
-            var_dump($ex->getMessage());
             return null;
         }
 
