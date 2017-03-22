@@ -1,3 +1,4 @@
+
 <?php
 
 if (!defined('_PS_VERSION_'))
@@ -550,8 +551,34 @@ class SpryngPayments extends PaymentModule
         );
     }
 
+    private function canDoRequests()
+    {
+        if ((bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SANDBOX_ENABLED'))
+        {
+            $settingKey = 'API_KEY_SANDBOX';
+        }
+        else
+        {
+            $settingKey = 'API_KEY_LIVE';
+        }
+
+        $key = $this->getConfigurationValue($this->getConfigKeyPrefix() . $settingKey);
+        if (is_null($key) || $key === '' || empty($key))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
     private function getOrganisationListForConfigurationForm()
     {
+        if (!$this->canDoRequests())
+        {
+            return array();
+        }
         try {
             $organisations = $this->api->organisation->getAll();
         }
@@ -582,6 +609,10 @@ class SpryngPayments extends PaymentModule
 
     private function getAccountListForConfigurationForm()
     {
+        if (!$this->canDoRequests())
+        {
+            return array();
+        }
         try {
             $accounts = $this->api->account->getAll();
         }
