@@ -91,7 +91,7 @@ class CustomerHelper extends SpryngHelper
         {
             $customer = $this->api->customer->getCustomerById($id);
         }
-        catch (\GuzzleHttp\Exception\ClientException $ex)
+        catch (\SpryngPaymentsApiPhp\Exception\RequestException $ex)
         {
             return null;
         }
@@ -166,11 +166,7 @@ class CustomerHelper extends SpryngHelper
         {
             $customer = $this->api->customer->create($customer);
         }
-        catch (\GuzzleHttp\Exception\ClientException $ex)
-        {
-            return null;
-        }
-        catch (\GuzzleHttp\Exception\ClientException $clientException)
+        catch (\SpryngPaymentsApiPhp\Exception\RequestException $ex)
         {
             return null;
         }

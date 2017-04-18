@@ -33,7 +33,7 @@ class TransactionHelper extends SpryngHelper
         {
             return null;
         }
-        catch(\GuzzleHttp\Exception\RequestException $ex)
+        catch(\SpryngPaymentsApiPhp\Exception\RequestException $ex)
         {
             return null;
         }
@@ -113,7 +113,7 @@ class TransactionHelper extends SpryngHelper
         {
             $transaction = $this->api->transaction->getTransactionById($data['transaction_id']);
         }
-        catch (\GuzzleHttp\Exception\ClientException $clientException)
+        catch (\SpryngPaymentsApiPhp\Exception\RequestException $clientException)
         {
             return null;
         }

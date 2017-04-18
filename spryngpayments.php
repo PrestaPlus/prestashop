@@ -582,7 +582,7 @@ class SpryngPayments extends PaymentModule
         try {
             $organisations = $this->api->organisation->getAll();
         }
-        catch(\GuzzleHttp\Exception\ClientException $clientException)
+        catch(\SpryngPaymentsApiPhp\Exception\RequestException $requestException)
         {
             return array();
         }
@@ -616,7 +616,7 @@ class SpryngPayments extends PaymentModule
         try {
             $accounts = $this->api->account->getAll();
         }
-        catch(\GuzzleHttp\Exception\ClientException $clientException)
+        catch(\SpryngPaymentsApiPhp\Exception\RequestException $clientException)
         {
             return array();
         }

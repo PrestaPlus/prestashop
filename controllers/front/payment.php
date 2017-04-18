@@ -305,7 +305,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         {
             die('<p>Submitted transaction is invalid.</p>');
         }
-        catch(\GuzzleHttp\Exception\RequestException $ex)
+        catch(\SpryngPaymentsApiPhp\Exception\RequestException $ex)
         {
             die('<p>Your payment was refused.</p>');
         }
