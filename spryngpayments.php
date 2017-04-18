@@ -675,7 +675,7 @@ class SpryngPayments extends PaymentModule
             return false;
         }
 
-        if (!$this->initiateliseOrderStates())
+        if (!$this->initializeOrderStates())
         {
             PrestaShopLogger::addLog('Initialising Order States failed.');
             $this->_errors[] = 'An error occured while trying to initialise Spryng Order States.';
@@ -685,7 +685,7 @@ class SpryngPayments extends PaymentModule
         return true;
     }
 
-    private function initiateliseOrderStates()
+    private function initializeOrderStates()
     {
         $states = OrderState::getOrderStates(Configuration::get('PS_LANG_DEFAULT'));
         $this->createOrderStatus('Settlement Completed', $states, $this->getConfigKeyPrefix() .'SETTLEMENT_COMPLETED', '#5cb85c', true);
@@ -711,7 +711,6 @@ class SpryngPayments extends PaymentModule
             if ($state['name'] == $name)
             {
                 Configuration::updateValue($configName, $state['id_order_state']);
-
                 return;
             }
         }
@@ -733,7 +732,7 @@ class SpryngPayments extends PaymentModule
         $state->logable = true;
         $state->paid = $paid;
         $state->save();
-        Configuration::updateValue($configName, $state->id);
+        $this->initializeConfigurationValue($configName, $state->id);
     }
 
     public function changeOrderStatus($orderId, $status)

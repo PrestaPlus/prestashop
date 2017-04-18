@@ -166,8 +166,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         $payment['amount'] = (int) $total; // Order total
         $payment['customer_ip'] = $_SERVER['REMOTE_ADDR']; // The customers IP address
         // Formulate a random string to identify the transaction at a later stage
-        $payment['dynamic_descriptor'] = $cart->id.'-'.$customer->secure_key;
-        $payment['dynamic_descriptor'] = str_replace('_','', $payment['dynamic_descriptor']);
+        $payment['dynamic_descriptor'] = time() . $cart->id;
         // Load the merchant reference setting
         $payment['merchant_reference'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'MERCHANT_REFERENCE');
         $payment['user_agent'] = $_SERVER['HTTP_USER_AGENT']; // Get the users' User Agent
