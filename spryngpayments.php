@@ -1034,7 +1034,7 @@ class SpryngPayments extends PaymentModule
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ACCOUNT'),
                 'issuers' => $this->iDealIssuers,
-                'toggle' => true
+                'toggle' => 1
             ),
             'creditcard' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ENABLED'),
@@ -1042,7 +1042,7 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ACCOUNT'),
-                'toggle' => true
+                'toggle' => 1
             ),
             'paypal' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ENABLED'),
@@ -1050,7 +1050,7 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ACCOUNT'),
-                'toggle' => false
+                'toggle' => 0
             ),
             'sepa' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ENABLED'),
@@ -1058,7 +1058,7 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ACCOUNT'),
-                'toggle' => false
+                'toggle' => 0
             ),
             'klarna' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ENABLED'),
@@ -1066,7 +1066,7 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'),
-                'toggle' => true,
+                'toggle' => 0,
                 'pclasses' => $this->api->Klarna->getPClasses($this->getConfigurationValue(
                     $this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'))
             ),
@@ -1075,7 +1075,8 @@ class SpryngPayments extends PaymentModule
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ORGANISATION'),
-                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ACCOUNT')
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ACCOUNT'),
+                'toggle' => 0
             )
         );
 
