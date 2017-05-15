@@ -25,6 +25,12 @@ class SpryngPaymentsWebhookModuleFrontController extends ModuleFrontController
         }
 
         $transaction = $this->module->transactionHelper->findTransactionByCartId($orderDetails['cart_id']); // Fetch transaction by cart id
+        if ($transaction instanceof \SpryngPaymentsApiPhp\Exception\RequestException)
+        {
+            Logger::addLog(sprintf('%s: Error occurred while trying to fetch transaction for cart %d. Message: ',
+                $this->module->name, $orderDetails['cart_id'], $transaction->getMessage()));
+            die;
+        }
 
         if (is_null($transaction))
         {

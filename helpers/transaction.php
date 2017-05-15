@@ -115,7 +115,7 @@ class TransactionHelper extends SpryngHelper
         }
         catch (\SpryngPaymentsApiPhp\Exception\RequestException $clientException)
         {
-            return null;
+            return $clientException;
         }
 
         return $transaction;
