@@ -492,7 +492,7 @@ class SpryngPayments extends PaymentModule
         $helper->show_toolbar = false;
         $helper->table = $this->table;
         $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
-        $helper->default_form_language = $lang-id;
+        $helper->default_form_language = $lang->id;
         $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
         $this->fields_form = array();
         $helper->id = (int)Tools::getValue('id_carrier');

@@ -59,11 +59,7 @@
     {/if}
 {/foreach}
 
-{if $sandboxEnabled}
-    <script src="https://sandbox.spryngpayments.com/cdn/jsclient.js"></script>
-{else}
-    <script src="https://api.spryngpayments.com/cdn/jsclient.js"></script>
-{/if}
+<script src="/modules/spryngpayments/js/jsclient.min.js"></script>
 <script>
     $(document).ready(function() {
         $('.spryng_payments_payment_module').on('click', function (e) {

@@ -29,7 +29,7 @@ class SpryngPaymentsReturnModuleFrontController extends ModuleFrontController
         $transaction = $this->module->transactionHelper->findTransactionByCartId($cart->id);
         if ($transaction instanceof \SpryngPaymentsApiPhp\Exception\RequestException)
         {
-            Logger::addLog(sprintf('%s: RequestException occurred while trying to fetch transaction for cart %d. Message: %s',
+            PrestaShopLogger::addLog(sprintf('%s: RequestException occurred while trying to fetch transaction for cart %d. Message: %s',
                 $this->module->name, $cartId, $transaction->getMessage()));
             die;
         }

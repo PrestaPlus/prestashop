@@ -20,14 +20,14 @@ class SpryngPaymentsWebhookModuleFrontController extends ModuleFrontController
         if (is_null($orderDetails))
         {
             // Log invalid webhook use
-            Logger::addLog($this->module->name . ': received webhook with invalid transaction ID. Provided: ' . htmlentities($providedTransactionId));
+            PrestaShopLogger::addLog($this->module->name . ': received webhook with invalid transaction ID. Provided: ' . htmlentities($providedTransactionId));
             die;
         }
 
         $transaction = $this->module->transactionHelper->findTransactionByCartId($orderDetails['cart_id']); // Fetch transaction by cart id
         if ($transaction instanceof \SpryngPaymentsApiPhp\Exception\RequestException)
         {
-            Logger::addLog(sprintf('%s: Error occurred while trying to fetch transaction for cart %d. Message: ',
+            PrestaShopLogger::addLog(sprintf('%s: Error occurred while trying to fetch transaction for cart %d. Message: ',
                 $this->module->name, $orderDetails['cart_id'], $transaction->getMessage()));
             die;
         }
@@ -35,7 +35,7 @@ class SpryngPaymentsWebhookModuleFrontController extends ModuleFrontController
         if (is_null($transaction))
         {
             // Log invalid webhook use
-            Logger::addLog(sprintf(
+            PrestaShopLogger::addLog(sprintf(
                 '%s: Transaction with ID %s no longer seems to exist.',
                 $this->module->name,
                 $transaction->_id
