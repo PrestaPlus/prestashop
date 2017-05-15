@@ -1066,7 +1066,7 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'),
-                'toggle' => 0,
+                'toggle' => 1,
                 'pclasses' => $this->api->Klarna->getPClasses($this->getConfigurationValue(
                     $this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'))
             ),
