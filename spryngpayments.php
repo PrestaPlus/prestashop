@@ -12,6 +12,7 @@ require_once('helpers/transaction.php');
 require_once('helpers/customer.php');
 require_once('helpers/address.php');
 require_once('helpers/goods.php');
+require_once('helpers/order.php');
 
 class SpryngPayments extends PaymentModule
 {
@@ -55,6 +56,8 @@ class SpryngPayments extends PaymentModule
 
     public $goodsHelper;
 
+    public $orderHelper;
+
     public function __construct()
     {
         parent::__construct();
@@ -75,6 +78,7 @@ class SpryngPayments extends PaymentModule
         $this->customerHelper = new CustomerHelper($this->api);
         $this->addressHelper = new AddressHelper($this->api);
         $this->goodsHelper = new GoodsHelper($this->api);
+        $this->orderHelper = new OrderHelper($this->api);
     }
 
     public function getContent()
@@ -805,6 +809,7 @@ class SpryngPayments extends PaymentModule
                     `cart_id` INT(64),
                     `order_id` INT(64),
                     `status` VARCHAR(255) NOT NULL,
+                    `webhook_key` VARCHAR(100),
                     `created_at` DATETIME NOT NULL,
                     `updated_at` DATETIME NOT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",

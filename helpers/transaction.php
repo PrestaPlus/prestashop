@@ -1,7 +1,17 @@
 <?php
 
+/**
+ * Class TransactionHelper
+ */
 class TransactionHelper extends SpryngHelper
 {
+    /**
+     * Submits a transaction to the API
+     *
+     * @param $transaction
+     * @param $method
+     * @return null|\SpryngPaymentsApiPhp\Object\Transaction
+     */
     public function submitTransaction($transaction, $method)
     {
         try
@@ -41,6 +51,14 @@ class TransactionHelper extends SpryngHelper
         return $newTransaction;
     }
 
+    /**
+     * Stores the details of a transaction in the database.
+     *
+     * @param $transactionId
+     * @param $method
+     * @param $cartId
+     * @param $status
+     */
     public function storeTransaction($transactionId, $method, $cartId, $status)
     {
         Db::getInstance()->insert(
@@ -57,6 +75,12 @@ class TransactionHelper extends SpryngHelper
         );
     }
 
+    /**
+     * Saves the cart ID for a Spryng Payments transaction to the database.
+     *
+     * @param $cartId
+     * @return bool
+     */
     public function setOrderIdForCartId($cartId)
     {
         Db::getInstance()->update(
@@ -68,6 +92,12 @@ class TransactionHelper extends SpryngHelper
         return true;
     }
 
+    /**
+     * Retrieves the order ID for a cart ID from the database.
+     *
+     * @param $cartId
+     * @return int|null
+     */
     public function getOrderIdForCartId($cartId)
     {
         $orderData = Db::getInstance()->executeS(sprintf(
@@ -89,6 +119,12 @@ class TransactionHelper extends SpryngHelper
         }
     }
 
+    /**
+     * Finds a Spryng transaction ID for a certain cart ID
+     *
+     * @param $cartId
+     * @return Exception|null|\SpryngPaymentsApiPhp\Exception\RequestException|\SpryngPaymentsApiPhp\Object\Transaction
+     */
     public function findTransactionByCartId($cartId)
     {
         $data = Db::getInstance()->executeS(
@@ -121,6 +157,12 @@ class TransactionHelper extends SpryngHelper
         return $transaction;
     }
 
+    /**
+     * Finds the details of an order by a Spryng Transaction ID in the database
+     *
+     * @param $transactionId
+     * @return null
+     */
     public function findOrderDetailsByTransactionId($transactionId)
     {
         $data = Db::getInstance()->executeS(

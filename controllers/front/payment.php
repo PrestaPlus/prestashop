@@ -159,7 +159,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
     {
         // Generate a goodslist based on the products in the users cart. Mainly for Klarna but we can also calculate
         // the total cost of the order.
-        $goodsList = $this->module->goodsHelper->getGoodsList($cart->getProducts());
+        $goodsList = $this->module->goodsHelper->getGoodsList($cart, true);
         $total = $goodsList->getTotalAmount(); // Get total order amount
 
         $payment = array();
@@ -226,7 +226,7 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
                 // Set the pclass (payment plan)
                 $payment['details']['pclass'] = $pclass;
                 // Add the generated goods list
-                $payment['details']['goods_list'] = $this->module->goodsHelper->getGoodsList($cart->getProducts());
+                $payment['details']['goods_list'] = $this->module->goodsHelper->getGoodsList($cart);
                 // Generate a customer object and save it to the database. getCustomer returns the Spryng ID of the customer
                 // which will be supplied to the transaction for submission.
                 $customer = $this->module->customerHelper->getCustomer($cart, $payment['account']);
