@@ -45,6 +45,7 @@ class TransactionHelper extends SpryngHelper
         }
         catch(\SpryngPaymentsApiPhp\Exception\RequestException $ex)
         {
+            var_dump($ex);
             return null;
         }
 
@@ -59,7 +60,7 @@ class TransactionHelper extends SpryngHelper
      * @param $cartId
      * @param $status
      */
-    public function storeTransaction($transactionId, $method, $cartId, $status)
+    public function storeTransaction($transactionId, $method, $cartId, $status, $webhookKey)
     {
         Db::getInstance()->insert(
             'spryng_payments',
@@ -69,6 +70,7 @@ class TransactionHelper extends SpryngHelper
                 'cart_id' => $cartId,
                 'order_id' => null,
                 'status' => $status,
+                'webhook_key' => $webhookKey,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             )
@@ -182,5 +184,44 @@ class TransactionHelper extends SpryngHelper
         {
             return $data[0];
         }
+    }
+
+    /**
+     * Searches database for order details based on webhook key
+     *
+     * @param $key
+     * @return null
+     */
+    public function findOrderDetailsByWebhookKey($key)
+    {
+        $data = Db::getInstance()->executeS(
+            sprintf('SELECT * FROM `%s` WHERE `%s` = "%s" ORDER BY `%s` DESC LIMIT 1;',
+                _DB_PREFIX_ . 'spryng_payments',
+                'webhook_key',
+                $key,
+                'created_at'
+            )
+        );
+
+        if (count($data) !== 1)
+        {
+            return null;
+        }
+        else
+        {
+            return $data[0];
+        }
+    }
+
+    public function generateWebhookKey($length)
+    {
+        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
+        $key = '';
+        for ($i = 0; $i < $length; $i++)
+        {
+            $key .= $chars[rand(0, strlen($chars) - 1)];
+        }
+
+        return $key;
     }
 }

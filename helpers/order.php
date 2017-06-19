@@ -19,11 +19,6 @@ class OrderHelper extends SpryngHelper
         $history->changeIdOrderState($orderId, $newStatus);
     }
 
-    public function setWebhookKey($cartId)
-    {
-        
-    }
-
     /**
      * Generates a random string to be used as key in the webhook function
      *

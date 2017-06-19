@@ -14,9 +14,11 @@ require_once('helpers/address.php');
 require_once('helpers/goods.php');
 require_once('helpers/order.php');
 
+/**
+ * Class SpryngPayments
+ */
 class SpryngPayments extends PaymentModule
 {
-
     const VERSION = '1.0';
     const CONFIG_KEY_PREFIX = 'SPRYNG_';
 
@@ -48,25 +50,55 @@ class SpryngPayments extends PaymentModule
         'TRIONL2U' => 'Triodos Bank'
     ];
 
+    /**
+     * Instance of the transaction helper
+     *
+     * @var TransactionHelper
+     */
     public $transactionHelper;
 
+    /**
+     * Instance of the customer helper
+     *
+     * @var CustomerHelper
+     */
     public $customerHelper;
 
+    /**
+     * Instance of the address helper
+     *
+     * @var AddressHelper
+     */
     public $addressHelper;
 
+    /**
+     * Instance of the goods helper
+     *
+     * @var GoodsHelper
+     */
     public $goodsHelper;
 
+    /**
+     * Instance of the order helper
+     *
+     * @var OrderHelper
+     */
     public $orderHelper;
 
+    /**
+     * SpryngPayments constructor.
+     */
     public function __construct()
     {
         parent::__construct();
 
+        // Initial plugin name and description
         $this->displayName = 'Spryng Payments for Prestashop';
         $this->description = 'Spryng Payments payment gateway for Prestashop.';
 
-        require_once('vendor/autoload.php');
+        require_once('vendor/autoload.php'); // Load Composer deps
 
+        // Initiate the PHP SDK using defined settings. Uses sandbox by default.
         $this->api = new \SpryngPaymentsApiPhp\Client(
             ((bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SANDBOX_ENABLED') ? // Use applicable API key for environment
                 $this->getConfigurationValue($this->getConfigKeyPrefix() . 'API_KEY_SANDBOX') :
@@ -74,6 +106,7 @@ class SpryngPayments extends PaymentModule
             (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SANDBOX_ENABLED')
         );
 
+        // Initiate helpers
         $this->transactionHelper = new TransactionHelper($this->api);
         $this->customerHelper = new CustomerHelper($this->api);
         $this->addressHelper = new AddressHelper($this->api);
@@ -81,32 +114,42 @@ class SpryngPayments extends PaymentModule
         $this->orderHelper = new OrderHelper($this->api);
     }
 
+    /**
+     * In Prestashop, the getContent() function returns the HTML for the settings page.
+     *
+     * @return string
+     */
     public function getContent()
     {
         $configHtml = '';
 
+        // Check if the form is submitted
         if (Tools::isSubmit('btnSubmit'))
         {
-            $this->processConfigSubmit();
-            $configHtml .= $this->displayConfirmation('Settings updated.');
+            $this->processConfigSubmit(); // Save new settings
+            $configHtml .= $this->displayConfirmation('Settings updated.'); // Display save confirmation message
         }
 
-        $configHtml .= $this->getConfigurationPanelInfoHtml();
-        $configHtml .= $this->getConfigForm();
+        $configHtml .= $this->getConfigurationPanelInfoHtml(); // Load setting page header
+        $configHtml .= $this->getConfigForm(); // Load form HTML
 
         return $configHtml;
     }
 
+    /**
+     * Persists user defined preferences to the database
+     */
     protected function processConfigSubmit()
     {
         if (Tools::isSubmit('btnSubmit'))
         {
-            $postData = Tools::getAllValues();
+            $postData = Tools::getAllValues(); // Load all the values from the request
+            // Load the setting key prefix, meaning that only params formatted as {prefix}_{key} will be processed
             $prefix = $this->getConfigKeyPrefix();
 
             foreach($postData as $key => $post)
             {
-                if (substr($key, 0, strlen($prefix)) == $prefix)
+                if (substr($key, 0, strlen($prefix)) == $prefix) // Check for the prefix
                 {
                     Configuration::updateValue($key, $post);
                 }
@@ -114,15 +157,28 @@ class SpryngPayments extends PaymentModule
         }
     }
 
+    /**
+     * Loads the settings page header template
+     *
+     * @return string
+     */
     protected function getConfigurationPanelInfoHtml()
     {
         return $this->display(__FILE__,'config_info.tpl');
     }
 
+    /**
+     * Defines the structure of the settings page and returns it as HTML using using the Presta form helper
+     *
+     * @return string
+     */
     protected function getConfigForm()
     {
-        $organisations = $this->getOrganisationListForConfigurationForm();
-        $accounts = $this->getAccountListForConfigurationForm();
+        $organisations = $this->getOrganisationListForConfigurationForm(); // Load orgs from the API
+        $accounts = $this->getAccountListForConfigurationForm(); // Load accounts from the API
+
+        // If no accounts were found, it could be because no API key is saved.
+        // Disable the selector and display informative message
         if (count($accounts) > 0)
         {
             $accountSelectorDisabled = false;
@@ -136,6 +192,8 @@ class SpryngPayments extends PaymentModule
             $accountSelectorDisabled = true;
         }
 
+        // If no organisations were found, it could be because no API key is saved.
+        // Disable the selector and display informative message
         if (count($organisations) > 0)
         {
             $organisationSelectorDisabled = false;
@@ -149,6 +207,7 @@ class SpryngPayments extends PaymentModule
             $organisationSelectorDisabled = true;
         }
 
+        // Define form as an array, which can be converted to HTML by the Presta form helper
         $fields = array(
             'form' => array(
                 'legend' => array(
@@ -492,6 +551,7 @@ class SpryngPayments extends PaymentModule
             )
         );
 
+        // Use the presta form helper to convert the form array to HTML
         $helper = new HelperForm();
         $helper->show_toolbar = false;
         $helper->table = $this->table;
@@ -513,6 +573,11 @@ class SpryngPayments extends PaymentModule
         return $helper->generateForm(array($fields));
     }
 
+    /**
+     * Get all config parameters to load into templates
+     *
+     * @return array
+     */
     private function getAllConfigurationValues()
     {
         $prefix = $this->getConfigKeyPrefix();
@@ -555,8 +620,14 @@ class SpryngPayments extends PaymentModule
         );
     }
 
+    /**
+     * Checks weather API requests can be executed based on settings to prevent exceptions
+     *
+     * @return bool
+     */
     private function canDoRequests()
     {
+        // Check if sandbox is enabled
         if ((bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SANDBOX_ENABLED'))
         {
             $settingKey = 'API_KEY_SANDBOX';
@@ -566,6 +637,7 @@ class SpryngPayments extends PaymentModule
             $settingKey = 'API_KEY_LIVE';
         }
 
+        // If the active API key is empty, no requests can be performed
         $key = $this->getConfigurationValue($this->getConfigKeyPrefix() . $settingKey);
         if (is_null($key) || $key === '' || empty($key))
         {
@@ -577,22 +649,28 @@ class SpryngPayments extends PaymentModule
         }
     }
 
+    /**
+     * Fetches organisations from the API
+     *
+     * @return array
+     */
     private function getOrganisationListForConfigurationForm()
     {
+        // If there is no valid active API key, just return an empty array as fetching is not going to work
         if (!$this->canDoRequests())
         {
             return array();
         }
         try {
-            $organisations = $this->api->organisation->getAll();
+            $organisations = $this->api->organisation->getAll(); // Load all orgs
         }
         catch(\SpryngPaymentsApiPhp\Exception\RequestException $requestException)
         {
             return array();
         }
 
+        // Parse the organisations to a format that can be used as selector options by presta
         $options = array();
-
         foreach($organisations as $organisation)
         {
             $option = array(
@@ -611,8 +689,14 @@ class SpryngPayments extends PaymentModule
         return $organisationOptions;
     }
 
+    /**
+     * Fetches accounts from the API
+     *
+     * @return array
+     */
     private function getAccountListForConfigurationForm()
     {
+        // If there is no valid active API key, just return an empty array as fetching is not going to work
         if (!$this->canDoRequests())
         {
             return array();
@@ -624,8 +708,9 @@ class SpryngPayments extends PaymentModule
         {
             return array();
         }
-        $options = array();
 
+        // Parse the organisations to a format that can be used as selector options by presta
+        $options = array();
         foreach($accounts as $account)
         {
             $option = array(
@@ -651,44 +736,50 @@ class SpryngPayments extends PaymentModule
      */
     public function install()
     {
-        if (!parent::install())
+        if (!parent::install()) // Fail if basic plugin installation procedures fail
         {
             PrestaShopLogger::addLog('Parent installation failed');
             $this->_errors[] = 'An error occurred during the initial installation of Spryng Payments for Prestashop.';
             return false;
         }
 
-        if (!$this->_registerHooks())
+        if (!$this->_registerHooks()) // Fail if the controller hooks can't be registered
         {
             PrestaShopLogger::addLog('Registering hooks failed');
             $this->_errors[] = 'An error has occurred during the installation process of Spryng Payments for Prestashop.';
             return false;
         }
 
-        if (!$this->initializeConfiguration())
+        if (!$this->initializeConfiguration()) // Fail if the configuration can't be initialised
         {
             PrestaShopLogger::addLog('Initializing configuration failed.');
             $this->_errors[] = 'Spryng Payments failed to load initial configuration.';
             return false;
         }
 
-        if (!$this->createDatabaseTables())
+        if (!$this->createDatabaseTables()) // Fail if the database can't be initialised
         {
             PrestaShopLogger::addLog('Initializing database failed.');
             $this->_errors[] = 'A database error occurred while trying to initialize Spryng Payments.';
             return false;
         }
 
-        if (!$this->initializeOrderStates())
+        if (!$this->initializeOrderStates()) // Fail if the custom order states can't be created
         {
             PrestaShopLogger::addLog('Initialising Order States failed.');
             $this->_errors[] = 'An error occured while trying to initialise Spryng Order States.';
             return false;
         }
 
+        // All went well : )
         return true;
     }
 
+    /**
+     * Saves custom order states to the database. These order states conform to Spryng Payments statuses.
+     *
+     * @return bool
+     */
     private function initializeOrderStates()
     {
         $states = OrderState::getOrderStates(Configuration::get('PS_LANG_DEFAULT'));
@@ -708,8 +799,18 @@ class SpryngPayments extends PaymentModule
         return true;
     }
 
+    /**
+     * Saves a single customer order state to the database
+     *
+     * @param $name
+     * @param $states
+     * @param $configName
+     * @param $color
+     * @param $paid
+     */
     private function createOrderStatus($name, $states, $configName, $color, $paid)
     {
+        // Check if there is already an existing order state with this name
         foreach($states as $state)
         {
             if ($state['name'] == $name)
@@ -721,39 +822,47 @@ class SpryngPayments extends PaymentModule
 
         $names = array();
 
+        // Set names for different languages
         $state = new OrderState();
         foreach (Language::getLanguages(false) as $language)
         {
             $names[$language['id_lang']] = $name;
         }
-        $state->module_name = $this->name;
-        $state->name = $names;
-        $state->send_email = false;
-        $state->invoice = true;
-        $state->color = $color;
-        $state->unremovable = true;
-        $state->hidden = true;
-        $state->logable = true;
-        $state->paid = $paid;
-        $state->save();
+        $state->module_name = $this->name; // Save it for this module
+        $state->name = $names; // Add names
+        $state->send_email = false; // Will an email be sent if the order gets this status?
+        $state->invoice = true; // Will an invoice be created for this status?
+        $state->color = $color; // Hex of the color the status will have in the backend
+        $state->unremovable = true; // Status can't be deleted by store managers as it's system-critical
+        $state->hidden = true; // Hide the status for manual assignment
+        $state->logable = true; // Will the change be logged
+        $state->paid = $paid; // Does this status mean that the order is paid?
+        $state->save(); // Persist
         $this->initializeConfigurationValue($configName, $state->id);
     }
 
+    /**
+     * Change the status of an order
+     *
+     * @param $orderId
+     * @param $status
+     * @return bool|OrderHistory
+     */
     public function changeOrderStatus($orderId, $status)
     {
         $statusId = (int) $this->getConfigurationValue($this->getConfigKeyPrefix() . $status);
 
         if (is_null($statusId) || empty($statusId) || $statusId === 0)
-        {
             return false;
-        }
 
+        // Load the order history and add the new status
         $history = new OrderHistory();
         $history->id_order = $orderId;
         $history->id_order_state = $statusId;
         $history->changeIdOrderState($statusId, $orderId);
         $history->add();
 
+        // Return the new order history
         return $history;
     }
 
@@ -764,23 +873,28 @@ class SpryngPayments extends PaymentModule
      */
     public function uninstall()
     {
-        if (!$this->_unregisterHooks())
+        if (!$this->_unregisterHooks()) // Fail when existing hooks can't be deleted
         {
             $this->_errors[] = 'The uninstallation process of Spryng Payments for Prestashop failed. A hook could not be
             unregistered.';
             return false;
         }
 
-        if (!$this->deleteConfiguration())
+        if (!$this->deleteConfiguration()) // Fail when the configuration can't be deleted from the database
         {
             $this->_errors[] = 'Failed to delete all configuration values.';
             return false;
         }
 
-        $this->dropDatabaseTables();
+        $this->dropDatabaseTables(); // Drop the custom database tables
         return true;
     }
 
+    /**
+     * Executes queries to drop the custom database tables
+     *
+     * @return bool
+     */
     private function dropDatabaseTables()
     {
         $queries = [
@@ -791,17 +905,31 @@ class SpryngPayments extends PaymentModule
         foreach ($queries as $query)
         {
             if (!Db::getInstance()->execute($query))
-            {
                 return false;
-            }
         }
 
+        // All queries executed fine : )
         return true;
     }
 
+    /**
+     * Execute queries to create the custom database tables
+     *
+     * @return bool
+     */
     private function createDatabaseTables()
     {
+        // These queries define the custom database tables
         $queries = [
+            /**
+             * The 'spryng_payments' table holds all metadata related to transactions created using the module.
+             *
+             * transaction_id => the id of the transaction as it's generated by the Spryng Payments platform
+             * cart_id => ID of the prestashop shopping cart for this transaction
+             * order_id => When available, the ID of the order this transaction relates to
+             * status => the last known status of the payment
+             * webhook_key => a key that's added to the query of the webhook to make sure the webhook isn't abused
+             */
             sprintf("
                 CREATE TABLE IF NOT EXISTS `%s` (
                     `transaction_id` VARCHAR(255) NOT NULL PRIMARY KEY,
@@ -815,6 +943,12 @@ class SpryngPayments extends PaymentModule
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",
                 _DB_PREFIX_.'spryng_payments'
             ),
+            /**
+             * The 'spryng_customers' table holds data relating to Spryng Payments 'Customer' objects
+             *
+             * presta_customer_id => ID of the Prestashop user
+             * spryng_customer_id => ID of the Spryng Payments Customer object
+             */
             sprintf("
                 CREATE TABLE IF NOT EXISTS `%s` (
                     `presta_customer_id` INT(10) UNSIGNED NOT NULL PRIMARY KEY,
@@ -828,7 +962,7 @@ class SpryngPayments extends PaymentModule
         {
             if (!Db::getInstance()->execute($query))
             {
-                PrestaShopLogger::addLog(sprintf('Error occured while executing %s', $query));
+                PrestaShopLogger::addLog(sprintf('Error occured while executing %s', $query)); // Log when a query fails
                 $this->_errors[] = sprintf('Could not initialize database. Query: %s.', $query);
                 return false;
             }
@@ -841,6 +975,11 @@ class SpryngPayments extends PaymentModule
         return true;
     }
 
+    /**
+     * Registers controller hooks
+     *
+     * @return bool
+     */
     protected function _registerHooks()
     {
         return
@@ -852,6 +991,11 @@ class SpryngPayments extends PaymentModule
             $this->_registerHook('displayOrderConfirmation');
     }
 
+    /**
+     * De-registers controller hooks
+     *
+     * @return bool
+     */
     protected function _unregisterHooks()
     {
         return
@@ -864,6 +1008,13 @@ class SpryngPayments extends PaymentModule
             $this->_unregisterHook('displayOrderConfirmation');
     }
 
+    /**
+     * Register a single hook
+     *
+     * @param $name
+     * @param bool $standard
+     * @return bool
+     */
     protected function _registerHook($name, $standard = true)
     {
         if (!$standard && Hook::getIdByName($name))
@@ -874,6 +1025,13 @@ class SpryngPayments extends PaymentModule
         return $this->registerHook($name);
     }
 
+    /**
+     * Un-register a single hook
+     *
+     * @param $name
+     * @param bool $standard
+     * @return bool
+     */
     protected function _unregisterHook($name, $standard = true)
     {
         if (!$standard && !Hook::getIdByName($name))
@@ -884,6 +1042,11 @@ class SpryngPayments extends PaymentModule
         return $this->unregisterHook($name);
     }
 
+    /**
+     * Initialise the module configuration with empty values
+     *
+     * @return bool
+     */
     protected function initializeConfiguration()
     {
         return
@@ -939,6 +1102,11 @@ class SpryngPayments extends PaymentModule
             $this->initializeConfigurationValue($this->getConfigKeyPrefix().'SOFORT_ACCOUNT', '');
     }
 
+    /**
+     * Delete existing module configuration when the module is being un-installed
+     *
+     * @return bool
+     */
     protected function deleteConfiguration()
     {
         return
@@ -994,23 +1162,44 @@ class SpryngPayments extends PaymentModule
             $this->deleteConfigurationValue($this->getConfigKeyPrefix().'SOFORT_ACCOUNT');
     }
 
+    /**
+     * Initialise a single configuration value
+     *
+     * @param $key
+     * @param $value
+     * @return bool
+     */
     protected function initializeConfigurationValue($key, $value)
     {
         return Configuration::updateValue($key, (Configuration::get($key) !== false) ? Configuration::get($key) :
             $value);
     }
 
+    /**
+     * Delete a single configuration value
+     *
+     * @param $key
+     * @return bool
+     */
     protected function deleteConfigurationValue($key)
     {
         return Configuration::deleteByName($key);
     }
 
+    /**
+     * Get the value of a configuration parameter
+     *
+     * @param $key
+     * @return string
+     */
     public function getConfigurationValue($key)
     {
         return Configuration::get($key);
     }
 
     /**
+     * Get the current version of the module
+     *
      * @return string
      */
     public function getVersion()
@@ -1019,6 +1208,8 @@ class SpryngPayments extends PaymentModule
     }
 
     /**
+     * Get the prefix of module configuration parameters
+     *
      * @return string
      */
     public function getConfigKeyPrefix()
@@ -1026,6 +1217,12 @@ class SpryngPayments extends PaymentModule
         return self::CONFIG_KEY_PREFIX;
     }
 
+    /**
+     * In Prestashop, the hookDisplayPayment() function is called when the payment page is rendered.
+     * It returns a template file which will be rendered.
+     *
+     * @return string|void
+     */
     public function hookDisplayPayment()
     {
         if (!$this->active)
@@ -1085,6 +1282,7 @@ class SpryngPayments extends PaymentModule
             )
         );
 
+        // Assign payment method information to the template
         $this->smarty->assign(array(
             'sandboxEnabled' => (bool) $this->getConfigurationValue('SPRYNG_SANDBOX_ENABLED'),
             'configuration' => $configuration

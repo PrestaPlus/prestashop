@@ -13,14 +13,25 @@ class SpryngPaymentsWebhookModuleFrontController extends ModuleFrontController
 
         $payload = file_get_contents('php://input'); // Get the body of the request
         $parsedPayload = json_decode($payload, true); // Parse as JSON
+        $webhookKey = $_GET['key'];
         $providedTransactionId = $parsedPayload['_id']; // Get the ID of the provided order
 
-        $orderDetails = $this->module->transactionHelper->findOrderDetailsByTransactionId($providedTransactionId); // Fetch details
+        // Try to find order details with the provided webhook key
+        $orderDetails = $this->module->transactionHelper->findOrderDetailsByWebhookKey($webhookKey); // Fetch details
 
         if (is_null($orderDetails))
         {
             // Log invalid webhook use
             PrestaShopLogger::addLog($this->module->name . ': received webhook with invalid transaction ID. Provided: ' . htmlentities($providedTransactionId));
+            die;
+        }
+
+        // Check if the transaction ID for the found details matches the provided one. If not, something fishy is going on, so die.
+        if ($orderDetails['transaction_id'] !== $providedTransactionId)
+        {
+            PrestaShopLogger::addLog(sprintf('%s: Found order details for webhook key %s, but provided transaction ID \'%s\'
+                did not match transaction id \'%s\' from the database.', $this->module->name, $webhookKey,
+                $providedTransactionId, $orderDetails['transaction_id']));
             die;
         }
 
