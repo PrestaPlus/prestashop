@@ -88,15 +88,15 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
             }
         }
 
-        // Get the order amount
-        $orderAmount = $cart->getOrderTotal(true, Cart::BOTH);
+        // Generate a secret key for the webhook
+        $webhookKey = $this->module->transactionHelper->generateWebhookKey(100);
+
         // Prepare a transaction
         $transaction = $this->getTransactionData(
-            $orderAmount,
             $paymentMethod,
             $idealIssuer,
             $cart,
-            $customer,
+            $webhookKey,
             $cardToken,
             $pclass
         );
@@ -122,7 +122,8 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
                 $submittedTransaction->_id,
                 $paymentMethod,
                 $cart->id,
-                $submittedTransaction->status
+                $submittedTransaction->status,
+                $webhookKey
             );
         }
 
@@ -146,16 +147,17 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
     /**
      * Prepares a transaction for submission.
      *
-     * @param $amount
      * @param $method
      * @param $issuer
      * @param $cart
-     * @param $customer
+     * @param $webhooKKey
      * @param $cardToken
      * @param $pclass
      * @return array|null
+     * @internal param $amount
+     * @internal param $customer
      */
-    public function getTransactionData($amount, $method, $issuer, $cart, $customer, $cardToken, $pclass)
+    public function getTransactionData($method, $issuer, $cart, $webhooKKey, $cardToken, $pclass)
     {
         // Generate a goodslist based on the products in the users cart. Mainly for Klarna but we can also calculate
         // the total cost of the order.
@@ -171,6 +173,8 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         $payment['merchant_reference'] = $this->module->getConfigurationValue($this->module->getConfigKeyPrefix().'MERCHANT_REFERENCE');
         $payment['user_agent'] = $_SERVER['HTTP_USER_AGENT']; // Get the users' User Agent
         $payment['capture'] = true; // Capture the transaction right away
+        $payment['webhook_transaction_update'] = $this->getProtectedWebhookUrl($webhooKKey);
+
 
         /**
          * Adds additional order information for various payment methods.
@@ -331,6 +335,19 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         }
 
         // If not, return URL, replacing HTTP for HTTPS
+        return str_replace('http', 'https', $url);
+    }
+
+    protected function getProtectedWebhookUrl($key)
+    {
+        $url = $this->context->link->getModuleLink($this->module->name, 'webhook', ['key' => $key]);
+        $url = str_replace('presta.app', '8429d8a3.ngrok.io', $url);
+
+        if (substr($url, 0, 5) === 'https')
+        {
+            return $url;
+        }
+
         return str_replace('http', 'https', $url);
     }
 }
