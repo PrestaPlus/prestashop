@@ -54,10 +54,10 @@ class SpryngPaymentsReturnModuleFrontController extends ModuleFrontController
         $msgContinue = '<a href="' . _PS_BASE_URL_ . __PS_BASE_URI__ . '">' . 'Continue shopping' . '</a>';
         switch($transaction->status)
         {
+            case 'SETTLEMENT_REQUESTED':
             case 'SETTLEMENT_COMPLETED':
                 $msgMsg = 'Thank you. Your order was paid successfully.';
                 break;
-            case 'SETTLEMENT_REQUESTED':
             case 'INITIATED':
             case 'AUTHORIZED':
             case 'SETTLEMENT_PROCESSED':

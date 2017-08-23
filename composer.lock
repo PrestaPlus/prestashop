@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2d596f13fa47f7a05db68394ee758b48",
-    "content-hash": "cf9c167a63e5db3ec1eb3eed614f08c9",
+    "hash": "a30d2c41892a62f9a88fd26fd97f2a31",
+    "content-hash": "46e18e5bd6afc221dfcbc2bda41e39de",
     "packages": [
         {
             "name": "giggsey/libphonenumber-for-php",
@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "ab23498bb5b787ae108f5fba3e50134ce3635503"
+                "reference": "25e86a18972d349480b5456805c4a61a76667e22"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/ab23498bb5b787ae108f5fba3e50134ce3635503",
-                "reference": "ab23498bb5b787ae108f5fba3e50134ce3635503",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/25e86a18972d349480b5456805c4a61a76667e22",
+                "reference": "25e86a18972d349480b5456805c4a61a76667e22",
                 "shasum": ""
             },
             "require": {
@@ -73,7 +73,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2017-06-06 14:19:18"
+            "time": "2017-06-20 18:25:02"
         },
         {
             "name": "giggsey/locale",
@@ -126,16 +126,16 @@
         },
         {
             "name": "spryng/spryng-payments-api-php",
-            "version": "dev-master",
+            "version": "dev-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spryngpayments/php.git",
-                "reference": "65b1ab043e45f6a7c1c9f902040d7facd2aaab04"
+                "reference": "2d250bf9efceebeff48715ff3e02fb738a6e2a35"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spryngpayments/php/zipball/65b1ab043e45f6a7c1c9f902040d7facd2aaab04",
-                "reference": "65b1ab043e45f6a7c1c9f902040d7facd2aaab04",
+                "url": "https://api.github.com/repos/spryngpayments/php/zipball/2d250bf9efceebeff48715ff3e02fb738a6e2a35",
+                "reference": "2d250bf9efceebeff48715ff3e02fb738a6e2a35",
                 "shasum": ""
             },
             "require-dev": {
@@ -158,7 +158,7 @@
                 }
             ],
             "description": "A PHP interface to the Spryng Payments platform",
-            "time": "2017-06-16 13:19:41"
+            "time": "2017-06-21 12:39:49"
         }
     ],
     "packages-dev": [],

@@ -175,7 +175,6 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         $payment['capture'] = true; // Capture the transaction right away
         $payment['webhook_transaction_update'] = $this->getProtectedWebhookUrl($webhooKKey);
 
-
         /**
          * Adds additional order information for various payment methods.
          */
@@ -268,53 +267,6 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
         }
 
         return $payment;
-    }
-
-    /**
-     * Submits the transaction to the API
-     *
-     * @param $transaction
-     * @param $method
-     * @return mixed
-     */
-    protected function submitTransaction($transaction, $method)
-    {
-        try
-        {
-            // Use proper method to submit the transaction
-            switch(strtolower($method))
-            {
-                case 'creditcard':
-                    $newTransaction = $this->module->api->transaction->create($transaction);
-                    break;
-                case 'ideal':
-                    $newTransaction = $this->module->api->iDeal->initiate($transaction);
-                    break;
-                case 'paypal':
-                    $newTransaction = $this->module->api->Paypal->initiate($transaction);
-                    break;
-                case 'sepa':
-                case 'slimpay':
-                    $newTransaction = $this->module->api->Sepa->initiate($transaction);
-                    break;
-                case 'klarna':
-                    $newTransaction = $this->module->api->Klarna->initiate($transaction);
-                    break;
-                case 'sofort':
-                    $newTransaction = $this->module->api->SOFORT->initiate($transaction);
-                    break;
-            }
-        }
-        catch(\SpryngPaymentsApiPhp\Exception\TransactionException $ex)
-        {
-            die('<p>Submitted transaction is invalid.</p>');
-        }
-        catch(\SpryngPaymentsApiPhp\Exception\RequestException $ex)
-        {
-            die('<p>Your payment was refused.</p>');
-        }
-
-        return $newTransaction;
     }
 
     /**

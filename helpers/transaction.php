@@ -41,11 +41,14 @@ class TransactionHelper extends SpryngHelper
         }
         catch(\SpryngPaymentsApiPhp\Exception\TransactionException $ex)
         {
+            PrestaShopLogger::addLog(sprintf('%s: Transaction could not be initiated. Message: %s',
+                $ex->getMessage()));
             return null;
         }
         catch(\SpryngPaymentsApiPhp\Exception\RequestException $ex)
         {
-            var_dump($ex);
+            PrestaShopLogger::addLog(sprintf('%s: Transaction could not be initiated. Response code: %d. Response Text: %s',
+                $ex->getResponseCode(), $ex->getResponse()));
             return null;
         }
 
