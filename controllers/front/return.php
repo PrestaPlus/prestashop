@@ -51,13 +51,19 @@ class SpryngPaymentsReturnModuleFrontController extends ModuleFrontController
 
         $msgWelcome = 'Welcome Back';
         $msgMsg = '';
-        $msgContinue = '<a href="' . _PS_BASE_URL_ . __PS_BASE_URI__ . '">' . 'Continue shopping' . '</a>';
+        //avp
+        // $msgContinue = '<a href="' . _PS_BASE_URL_ . __PS_BASE_URI__ . '">' . 'Continue shopping' . '</a>';
+        $msgContinue = _PS_BASE_URL_ . __PS_BASE_URI__;
+        
         switch($transaction->status)
         {
             case 'SETTLEMENT_COMPLETED':
+            //avp
+            case 'SETTLEMENT_REQUESTED':            
                 $msgMsg = 'Thank you. Your order was paid successfully.';
                 break;
-            case 'SETTLEMENT_REQUESTED':
+            //avp
+            // case 'SETTLEMENT_REQUESTED':
             case 'INITIATED':
             case 'AUTHORIZED':
             case 'SETTLEMENT_PROCESSED':
@@ -79,7 +85,9 @@ class SpryngPaymentsReturnModuleFrontController extends ModuleFrontController
             'continue' => $msgContinue
         ]);
 
-        $this->setTemplate('return.tpl');
+        //avp
+        // $this->setTemplate('return.tpl');
+        $this->setTemplate('module:spryngpayments/views/templates/front/return.tpl');        
     }
 
     private function getEuroAmount($amount, $cartId)
