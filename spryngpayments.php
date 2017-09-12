@@ -1,5 +1,5 @@
-
 <?php
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
 if (!defined('_PS_VERSION_'))
 {
@@ -96,7 +96,9 @@ class SpryngPayments extends PaymentModule
         $this->displayName = 'Spryng Payments for Prestashop';
         $this->description = 'Spryng Payments payment gateway for Prestashop.';
 
-        require_once('vendor/autoload.php'); // Load Composer deps
+        //avp
+        // require_once('vendor/autoload.php'); // Load Composer deps
+        require_once(_PS_MODULE_DIR_.$this->name.'/vendor/autoload.php');       
 
         // Initiate the PHP SDK using defined settings. Uses sandbox by default.
         $this->api = new \SpryngPaymentsApiPhp\Client(
@@ -1218,16 +1220,16 @@ class SpryngPayments extends PaymentModule
     }
 
     /**
-     * In Prestashop, the hookDisplayPayment() function is called when the payment page is rendered.
+     * In Prestashop 1.7, the hookPaymentOptions() function is called when the payment page is rendered.
      * It returns a template file which will be rendered.
      *
      * @return string|void
      */
-    public function hookDisplayPayment()
-    {
-        if (!$this->active)
+        // avp
+        public function hookPaymentOptions($params) {
+            if (!$this->active)
             return;
-
+    
         $configuration = array(
             'ideal' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ENABLED'),
@@ -1236,7 +1238,7 @@ class SpryngPayments extends PaymentModule
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'IDEAL_ACCOUNT'),
                 'issuers' => $this->iDealIssuers,
-                'toggle' => 1
+                'toggle' => true
             ),
             'creditcard' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ENABLED'),
@@ -1244,7 +1246,7 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'CC_ACCOUNT'),
-                'toggle' => 1
+                'toggle' => true
             ),
             'paypal' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ENABLED'),
@@ -1252,7 +1254,7 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'PAYPAL_ACCOUNT'),
-                'toggle' => 0
+                'toggle' => false
             ),
             'sepa' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ENABLED'),
@@ -1260,59 +1262,69 @@ class SpryngPayments extends PaymentModule
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SEPA_ACCOUNT'),
-                'toggle' => 0
+                'toggle' => false
             ),
+            //avp-- we've got error here. don't know why, $this->api->Klarna
             'klarna' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ORGANISATION'),
                 'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'),
-                'toggle' => 1,
-                'pclasses' => $this->api->Klarna->getPClasses($this->getConfigurationValue(
-                    $this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'))
+                'toggle' => true
+                // 'pclasses' => $this->api->Klarna->getPClasses($this->getConfigurationValue(
+                //     $this->getConfigKeyPrefix() . 'KLARNA_ACCOUNT'))
             ),
             'sofort' => array(
                 'enabled' => (bool) $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ENABLED'),
                 'title' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_TITLE'),
                 'description' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_DESCRIPTION'),
                 'organisation' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ORGANISATION'),
-                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ACCOUNT'),
-                'toggle' => 0
+                'account' => $this->getConfigurationValue($this->getConfigKeyPrefix() . 'SOFORT_ACCOUNT')
             )
         );
-
-        // Assign payment method information to the template
-        $this->smarty->assign(array(
-            'sandboxEnabled' => (bool) $this->getConfigurationValue('SPRYNG_SANDBOX_ENABLED'),
-            'configuration' => $configuration
-        ));
-
-        return $this->display(__FILE__, 'payment.tpl');
-    }
-
-    public function hookDisplayPaymentTop()
-    {
-
-    }
-
-    public function hookDisplayAdminOrder()
-    {
-
-    }
-
-    public function hookDisplayHeader()
-    {
-
-    }
-
-    public function displayBackOfficeHeader()
-    {
-
-    }
-
-    public function displayOrderConfirmation()
-    {
-
-    }
+      
+        foreach ($configuration as $method_name => $method) {
+            if ($method['enabled']) {
+    
+                $newOption = new PaymentOption();
+                switch ($method_name) {
+                    case 'ideal': {
+                        $newOption->setModuleName($this->name)
+                        ->setCallToActionText(ucfirst(strtolower($method_name)))
+                        ->setInputs([
+                            'token' => [
+                                'method' =>'method',
+                                'type' =>'hidden',
+                                'value' => $method
+                            ],
+                        ])                    
+                        ->setForm($this->generateIdealForm());                   
+                    }              
+                    break;
+                    default:
+                    $newOption->setModuleName($this->name)
+                    ->setCallToActionText(ucfirst(strtolower($method_name)))
+                    ->setAction($this->context->link->getModuleLink($this->name, 'payment', array('method' => $method_name), true));
+                     break;                
+                }
+                     
+                $payment_options[] = $newOption;
+            }
+        }
+        return $payment_options;
+        }
+    
+    // avp
+        function generateIdealForm()
+        {                   
+            $issuers = $this->iDealIssuers;     
+    
+            $this->context->smarty->assign([
+                'action' => $this->context->link->getModuleLink($this->name, 'payment', array('payment' => 'ideal'), true),
+                'issuers' => $issuers
+            ]);
+            
+            return $this->context->smarty->fetch('module:spryngpayments/views/templates/front/ideal.tpl');
+        }
 }
