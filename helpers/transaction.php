@@ -86,7 +86,9 @@ class TransactionHelper extends SpryngHelper
     public function setOrderIdForCartId($cartId)
     {
         Db::getInstance()->update(
-            _DB_PREFIX_ . 'spryng_payments',
+            //avp
+            // _DB_PREFIX_ . 'spryng_payments',
+            'spryng_payments',            
             array('order_id' => $this->getOrderIdForCartId($cartId)),
             'cart_id = ' . $cartId
         );
