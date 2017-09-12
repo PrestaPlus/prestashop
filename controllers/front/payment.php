@@ -55,24 +55,33 @@ class SpryngPaymentsPaymentModuleFrontController extends ModuleFrontController
 
         // Sets method specific parameters
         if ( // Essentially checks if user wants to pay with credit card and provided the correct parameters
-            isset($_POST['method']) && // Method exists
-            $_POST['method'] == 'creditcard' && // The method is credit card
-            isset($_POST['cardToken']) && // The user posted a tokenised version of a cart
-            (bool) $_POST['cardToken'] // It's not empty
+            // isset($_POST['method']) && // Method exists
+            // $_POST['method'] == 'creditcard' && // The method is credit card
+            // isset($_POST['cardToken']) && // The user posted a tokenised version of a cart
+            // (bool) $_POST['cardToken'] // It's not empty
+            // avp
+            Tools::getValue('method') == 'creditcard' &&
+            Tools::getValue('cardToken')            
         )
         {
             // Correct parameters for credit card are supplied. Set the method to credit card and save token
             $paymentMethod = 'creditcard';
-            $cardToken = $_POST['cardToken'];
+            //avp
+            // $cardToken = $_POST['cardToken'];
+            $cardToken = Tools::getValue('cardToken');
         }
         else
         {
             $cardToken = null; // No credit card token
-            $paymentMethod = isset($_POST['method']) ? $_POST['method'] : null; // Get the supplied method
+            //avp
+            // $paymentMethod = isset($_POST['method']) ? $_POST['method'] : null; // Get the supplied method
+            $paymentMethod = Tools::getValue('method') ? Tools::getValue('method') : null; // Get the supplied method            
             if ($paymentMethod == 'ideal')
             {
                 // If the method is ideal, check if the user supplied a valid issuer (bank)
-                $idealIssuer = $_POST['issuer'];
+                //avp
+                // $idealIssuer = $_POST['issuer'];
+                $idealIssuer = Tools::getValue('ideal_issuer');                
                 if (empty($idealIssuer))
                     die('Could not initialize iDEAL payment.');
 
